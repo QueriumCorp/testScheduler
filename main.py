@@ -54,10 +54,70 @@ def getQuestion(jiraId):
     return json.loads(response.text)
 
 ###############################################################################
+#   Issue search
+#   arguments:
+#       - summary: "OSCAG"
+#       - labels: ["label1", "label2"]
+#   returns:
+#       json
+###############################################################################
+def issueSearch(summ, labels=[], qstnType="StepWise"):
+    jqlSumm = "summary ~ \""+summ+"\""
+    jqlLbls = "Labels=\"" + ("\" AND Labels=\"".join(labels)+"\"")
+    jqlAll = jqlSumm
+    if len(labels)>0:
+        jqlAll += " AND "+jqlLbls
+    if len(qstnType)>0:
+        jqlAll += " AND \"Question Type\"=\""+qstnType+"\""
+    print("jqlAll:", jqlAll)
+    # sys.exit()
+
+    url = os.environ.get('companyUrl')+"/rest/api/3/search"
+    auth = HTTPBasicAuth(
+        os.environ.get('jiraUser'),
+        os.environ.get('api-token')
+    )
+
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+
+    payload = json.dumps( {
+        "jql": jqlAll,
+        "maxResults": 15,
+        "fieldsByKeys": False,
+        "fields": [
+            "key"
+            "summary",
+            "labels",
+            "Question Type"
+        ],
+        "startAt": 0
+    } )
+
+    response = requests.request(
+        "POST",
+        url,
+        data=payload,
+        headers=headers,
+        auth=auth
+    )
+
+    return json.loads(response.text)
+
+###############################################################################
 #   Testing
 ###############################################################################
 def testing():
     print ("testing")
+
+    ## issueSearch
+    tmp = issueSearch("OSCAGc07s01*", ["CSULAWeek01"])
+    printJson(tmp)
+
+    sys.exit(0)
+
 
     ## get a jira question
     tmp = getQuestion("QUES-6019")
