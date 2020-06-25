@@ -1,8 +1,13 @@
 ###############################################################################
-#   Testing parts
+# test.py
+# Testing module
 ###############################################################################
-def testing():
-    print ("testing")
+import jql
+from dotenv import load_dotenv
+load_dotenv()
+
+def issueSearch():
+    print ("issueSearch")
 
     ## issueSearch
     tmpData = {
@@ -20,12 +25,11 @@ def testing():
         # "fields": ["key"],
         "qstnType": "StepWise"
     }
-    tmp = issueSearch(tmpData, flatten=True)
-    printJson(tmp)
+    tmp = jql.issueSearch(tmpData, flatten=True)
+    jql.printJson(tmp)
     print("total len: ", len(tmp))
 
-    sys.exit(0)
-
+def combContents():
     ## combContents
     tmp = {
         "content": [
@@ -63,15 +67,14 @@ def testing():
             }
         ]
     }
-    rslt = combContents(tmp)
+    rslt = jql.combContents(tmp)
     print(rslt)
 
-    sys.exit()
-
+def getFieldValue():
     ##getFieldValueV2
     tmpField = "MD5 Spec Hash"
     # tmpField = "Question Type"
-    tmp = getFieldValue(tmpField,
+    tmp = jql.getFieldValue(tmpField,
         {
             'expand': 'operations,versionedRepresentations,editmeta,changelog,renderedFields',
             'id': '47356',
@@ -88,29 +91,24 @@ def testing():
         })
     print (tmp)
 
-    sys.exit()
-
-    ## fieldToCust
-    tmp = [fieldToCust(i) for i in ["key", "Question Type", "MD5 Spec Hash"]]
-    print(tmp)
-    sys.exit()
-
+def getFields():
     ## getFields
     flds = ["a", "c"]
     arr = [{"a": "one", "b": "two", "c":"three"}, {"a": "four", "b": "five"}]
-    print (getFields(flds, arr))
+    print (jql.getFields(flds, arr))
 
-    sys.exit()
-
+def fieldToCust():
     ## fieldToCust
     tmpField = "ID Number"
-    print(tmpField, ":", fieldToCust(tmpField))
+    print(tmpField, ":", jql.fieldToCust(tmpField))
     tmpField = "Querium product ID"
-    print(tmpField, ":", fieldToCust(tmpField))
+    print(tmpField, ":", jql.fieldToCust(tmpField))
     tmpField = "rand"
-    print(tmpField, ":", fieldToCust(tmpField))
-    sys.exit(0)
+    print(tmpField, ":", jql.fieldToCust(tmpField))
+    tmp = [jql.fieldToCust(i) for i in ["key", "Question Type", "MD5 Spec Hash"]]
+    print(tmp)
 
+def buildJql():
     ## test: buildJql
     tmpData = {
         "summary": "OSCAGc07s01*",
@@ -118,19 +116,15 @@ def testing():
         "qstnType": "StepWise",
         "filds": ["key", "summary", "labels", "Question Type"]
     }
-    print (buildJql("issueSearch", tmpData))
-    print (buildJql("xxx", {"a": "one", "b": "two"}))
-    sys.exit(0)
+    print (jql.buildJql("issueSearch", tmpData))
+    print (jql.buildJql("xxx", {"a": "one", "b": "two"}))
 
-
+def getQuestion():
     ## get a jira question
-    tmp = getQuestion({"issue": "QUES-6019"})
-    printJson(tmp)
+    tmp = jql.getQuestion({"issue": "QUES-6019"})
+    jql.printJson(tmp)
 
-    sys.exit(0)
-
+def envVar():
     ## testing environment variables
     print (os.environ.get('USER'))
     print (os.environ.get('api-token'))
-
-    sys.exit(0)
