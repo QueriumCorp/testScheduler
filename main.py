@@ -1,5 +1,6 @@
 ###############################################################################
-# xxx
+# main.py
+# The main module
 
 # Requirements
 # Python >= 3.4
@@ -7,37 +8,23 @@
 
 # Need the following modules
 # python3 -m pip install python-dotenv
+# python3 -m pip install requests
+
+# To run
+# python3 main.py
 
 ###############################################################################
 import time
-import os
-import sys
-from dotenv import load_dotenv
-load_dotenv()
-
-###############################################################################
-#   Support functions
-###############################################################################
-
-###############################################################################
-#   Testing
-###############################################################################
-def testing():
-    print ("testing")
-
-    ## testing environment variables
-    print (os.environ.get('USER'))
-    print (os.environ.get('api-token'))
-
-
-    sys.exit(0)
-
+import jql
+import test
 
 ###############################################################################
 #   Main
 ###############################################################################
 if __name__ == '__main__':
     print ("\nSTART:", time.strftime("%c"))
-    testing()
+
+    ### testing code
+    # test.issueSearch()
 
     print ("\nEND:", time.strftime("%c"))
