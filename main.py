@@ -15,6 +15,7 @@
 
 ###############################################################################
 import time
+import input
 import jql
 import test
 
@@ -26,5 +27,13 @@ if __name__ == '__main__':
 
     ### testing code
     # test.issueSearch()
+
+    ### Get filter input
+    filter = input.getFilter()
+    print ("input:", filter)
+
+    ### Search jira based on the filter
+    result = jql.issueSearch(filter, flatten=True)
+    print ("result:", result)
 
     print ("\nEND:", time.strftime("%c"))
