@@ -6,6 +6,8 @@ def getFilter():
     if len(sys.argv) != 2:
         print ("Please provide json filters:")
         print ('python3 main.py \'{"summary":"OSCAGc07s01*", "labels": ["CSULAWeek01"], "fields":["key"], "qstnType":"StepWise"}\'')
+        print("OR")
+        print ('python3 main.py \'{"jql": "project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \"Mathematica Specification\" !~ MatchSpec", "fields":["key"], "qstnType":"StepWise"}\'')
         sys.exit(1)
 
     filter = json.loads(sys.argv[1])

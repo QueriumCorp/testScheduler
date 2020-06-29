@@ -26,6 +26,10 @@ def printJson(data):
     print(json.dumps(data, sort_keys=True, indent=4, separators=(",", ": ")))
 
 def jqLIssueSearch(data):
+    ## if data contains jql, return its value. It is a jira query
+    if "jql" in data:
+        return data["jql"]
+
     jqlAll = "summary ~ \""+data["summary"]+"\""
     if "labels" in data:
         jqlLbls = "Labels=\"" + ("\" AND Labels=\"".join(data["labels"])+"\"")
