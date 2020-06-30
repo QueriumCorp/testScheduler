@@ -36,7 +36,7 @@ def jqLIssueSearch(data):
         jqlAll += " AND "+jqlLbls
     if "qstnType" in data:
         jqlAll += " AND \"Question Type\"=\""+data["qstnType"]+"\""
-    print("jqlAll:", jqlAll)
+    # print("jqlAll:", jqlAll)
 
     return jqlAll
 
@@ -235,4 +235,4 @@ def issueSearch(data, flatten=False):
             else:
                 rsltAll.extend(rsltPrt["issues"])
 
-    return rsltAll
+    return json.dumps(rsltAll)

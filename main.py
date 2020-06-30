@@ -25,17 +25,18 @@ import test
 #   Main
 ###############################################################################
 if __name__ == '__main__':
-    print ("\nSTART:", time.strftime("%c"))
+    # print ("\nSTART:", time.strftime("%c"))
 
     ### testing code
     # test.issueSearch()
 
     ### Get filter input
     filter = input.getFilter()
-    print ("input:", filter)
+    # print ("input:", filter)
 
     ### Search jira based on the filter
     result = jql.issueSearch(filter, flatten=True)
-    print ("result:", result)
+    # print ("result:", result)
+    print (result)
 
-    print ("\nEND:", time.strftime("%c"))
+    # print ("\nEND:", time.strftime("%c"))
