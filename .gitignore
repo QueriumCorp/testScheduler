@@ -1,5 +1,4 @@
 .vscode
 .env
 __pycache__/*
-jql.pyc
-input.pyc
+*.pyc
