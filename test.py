@@ -3,8 +3,76 @@
 # Testing module
 ###############################################################################
 import jql
+import input
+import filter
+import util
 from dotenv import load_dotenv
 load_dotenv()
+import os
+from urllib.parse import urlencode
+
+def filterExistsQ():
+    print ("test - filterExistsQ")
+    name = "Bug Priority Search by LO"
+    # name = "Bug Priority"
+    # name = "MacDemoQUES"
+    rslt = filter.filterExistsQ(name)
+    print (rslt)
+
+def nextUrl():
+    print ("test - nextUrl")
+    name = "QUES search"
+    route, _ = jql.buildJql("filterNameSearch", name)
+    urlRoot = os.environ.get('companyUrl')+route
+    print("urlRoot:", urlRoot)
+    urlNext = urlRoot+"&"+urlencode({"startAt": 50})
+    print("urlNext:", urlNext)
+    urlNext = urlRoot+"&"+urlencode({"startAt": 100})
+    print("urlNext:", urlNext)
+
+def nextPageQ():
+    print ("test - nextPageQ")
+    tmpResp = {
+        "isLast": True,
+        "startAt": 0,
+        "maxResults": 50,
+        "total": 500
+    }
+    print (util.nextPageQ(tmpResp))
+    tmpResp = {
+        "isLast": False,
+        "startAt": 0,
+        "maxResults": 50,
+        "total": 500
+    }
+    print (util.nextPageQ(tmpResp))
+    tmpResp = {
+        "startAt": 0,
+        "maxResults": 50,
+        "total": 500
+    }
+    print (util.nextPageQ(tmpResp))
+    tmpResp = {
+        "startAt": 450,
+        "maxResults": 50,
+        "total": 500
+    }
+    print (util.nextPageQ(tmpResp))
+    tmpResp = {
+        "maxResults": 50,
+        "total": 500
+    }
+    print (util.nextPageQ(tmpResp))
+    tmpResp = {
+        "maxResults": 50
+    }
+    print (util.nextPageQ(tmpResp))
+
+def makeFilter():
+    print ("test - makeFilter")
+    tmpName = "QUES search"
+    tmpJql = 'project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND "Mathematica Specification" !~ MatchSpec'
+    filter.mkFilter(tmpName, tmpJql)
 
 def issueSearch():
     print ("issueSearch")

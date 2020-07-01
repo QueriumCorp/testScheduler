@@ -18,6 +18,7 @@ load_dotenv()
 import requests
 from requests.auth import HTTPBasicAuth
 import json
+from urllib.parse import quote
 
 ###############################################################################
 #   Support functions
@@ -45,6 +46,10 @@ def buildJql(type, data):
         return ("/rest/api/3/search", jqLIssueSearch(data))
     if (type == "issue"):
         return ("/rest/api/3/issue/", data["issue"])
+    if (type == "filterSearch"):
+        return ("/rest/api/3/filter/search", "")
+    if (type == "filterNameSearch"):
+        return ("/rest/api/3/filter/search?filterName="+quote(data), "")
 
     print ("buildJql: invalid type")
     return False
@@ -139,7 +144,7 @@ def getFields(flds, arr, flatten=False):
 
 ###############################################################################
 #   Get a jira question
-#   arguments:
+#   Parameter:
 #       - object with issue: jiraID: {"issue": "QUES-6019"}
 #   returns:
 #       json
@@ -169,7 +174,7 @@ def getQuestion(data):
 
 ###############################################################################
 #   Issue search
-#   arguments:
+#   parameters:
 #       - summary: "OSCAG"
 #       - labels: ["label1", "label2"]
 #       - [flatten]: False means return without postprocessing the value
@@ -178,6 +183,9 @@ def getQuestion(data):
 ###############################################################################
 def issueSearch(data, flatten=False):
     route, jql = buildJql("issueSearch", data)
+    result = {
+        "jql": jql
+    }
 
     url = os.environ.get('companyUrl')+route
     auth = HTTPBasicAuth(
@@ -199,7 +207,7 @@ def issueSearch(data, flatten=False):
 
 
     gotEverythingQ = False
-    rsltAll = []
+    jqlRslt = []
     while not gotEverythingQ:
         payload = json.dumps( payloadObj )
         response = requests.request(
@@ -230,9 +238,10 @@ def issueSearch(data, flatten=False):
 
         if "issues" in rsltPrt:
             if("fields" in data):
-                rsltAll.extend(getFields(data["fields"], rsltPrt["issues"],
+                jqlRslt.extend(getFields(data["fields"], rsltPrt["issues"],
                 flatten=flatten))
             else:
-                rsltAll.extend(rsltPrt["issues"])
+                jqlRslt.extend(rsltPrt["issues"])
+    result["result"] = jqlRslt
 
-    return json.dumps(rsltAll)
+    return result
