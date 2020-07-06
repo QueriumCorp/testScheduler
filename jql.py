@@ -50,6 +50,8 @@ def buildJql(type, data):
         return ("/rest/api/3/filter/search", "")
     if (type == "filterNameSearch"):
         return ("/rest/api/3/filter/search?filterName="+quote(data), "")
+    if (type == "createFilter"):
+        return ("/rest/api/3/filter", "")
 
     print ("buildJql: invalid type")
     return False

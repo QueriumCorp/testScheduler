@@ -11,11 +11,25 @@ load_dotenv()
 import os
 from urllib.parse import urlencode
 
+def mkFilter():
+    print ("test - mkFilter")
+    name = "filterTest8"
+    jql = "project = QUES AND Labels = CSULAWeek01"
+    # jql = "project = QUES ANDdsf Labels = CSULAWeek01"
+    # settings = {"description": "testing"}
+    # settings = {"shareGroup": "AI Engineer"}
+    settings = {"shareGroup": "xxx"}
+    rslt = filter.mkFilter(name, jql, settings)
+    # rslt = filter.mkFilter(name, jql)
+    print (rslt)
+
 def filterExistsQ():
     print ("test - filterExistsQ")
-    name = "Bug Priority Search by LO"
+    # name = "Bug Priority Search by LO"
     # name = "Bug Priority"
     # name = "MacDemoQUES"
+    # name = "utest bug collector"
+    name = "Fall19bus"
     rslt = filter.filterExistsQ(name)
     print (rslt)
 
@@ -30,43 +44,43 @@ def nextUrl():
     urlNext = urlRoot+"&"+urlencode({"startAt": 100})
     print("urlNext:", urlNext)
 
-def nextPageQ():
-    print ("test - nextPageQ")
+def nextPage():
+    print ("test - nextPage")
     tmpResp = {
         "isLast": True,
         "startAt": 0,
         "maxResults": 50,
         "total": 500
     }
-    print (util.nextPageQ(tmpResp))
+    print (util.nextPage(tmpResp))
     tmpResp = {
         "isLast": False,
         "startAt": 0,
         "maxResults": 50,
         "total": 500
     }
-    print (util.nextPageQ(tmpResp))
+    print (util.nextPage(tmpResp))
     tmpResp = {
         "startAt": 0,
         "maxResults": 50,
         "total": 500
     }
-    print (util.nextPageQ(tmpResp))
+    print (util.nextPage(tmpResp))
     tmpResp = {
         "startAt": 450,
         "maxResults": 50,
         "total": 500
     }
-    print (util.nextPageQ(tmpResp))
+    print (util.nextPage(tmpResp))
     tmpResp = {
         "maxResults": 50,
         "total": 500
     }
-    print (util.nextPageQ(tmpResp))
+    print (util.nextPage(tmpResp))
     tmpResp = {
         "maxResults": 50
     }
-    print (util.nextPageQ(tmpResp))
+    print (util.nextPage(tmpResp))
 
 def makeFilter():
     print ("test - makeFilter")

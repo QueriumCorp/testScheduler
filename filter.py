@@ -20,6 +20,7 @@ import json
 import jql
 import util
 from urllib.parse import urlencode
+from datetime import datetime
 
 ###############################################################################
 #   Support functions
@@ -28,8 +29,8 @@ from urllib.parse import urlencode
 #######################################
 #   Does filter already exists
 #   parameters:
-#       - name: name of a new filter
-#       - jql: Jira Query Language
+#   - name: name of a new filter
+#   - jql: Jira Query Language
 #######################################
 def filterExistsQ(name):
     route, _ = jql.buildJql("filterNameSearch", name)
@@ -58,14 +59,78 @@ def filterExistsQ(name):
 
         rsltPart = json.loads(response.text)
         for val in rsltPart["values"]:
+            print ("name: ", val["name"])
             if val["name"] == name:
                 return True
 
-        nextPage = util.nextPageQ(rsltPart)
+        nextPage = util.nextPage(rsltPart)
         terminateQ = nextPage["isLast"]
         urlNext = urlRoot+"&"+urlencode({"startAt": nextPage["startAt"]})
 
     return False
+
+#######################################
+#   Create a filter in Jira
+#   NOTE: The api-token that is used to create filter belongs to Evan's account.
+#   If Evan is not in a group, he doesn't have enough privilege to creat a
+#   filter for it. Fix it: generate api-token under an account that has higher
+#   privilege.
+#   parameters:
+#   - name: name of a new filter
+#   - jqlStr: Jira Query Language
+#   - settings: pass any settings for creating jira filter. If the share
+#     permission is not shareGroup, please look at the refs for
+#     addSharePermission
+#   return:
+#   {"status": boolean, "result": "<filterID>" or {errors}}
+#   Refs:
+#   https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-post
+#   https://docs.atlassian.com/software/jira/docs/api/REST/1000.679.0/#api/2/filter-addSharePermission
+#######################################
+def mkJiraFilter(name, jqlStr, settings):
+    route, _ = jql.buildJql("createFilter", name)
+    url = os.environ.get('companyUrl')+route
+
+    auth = HTTPBasicAuth(
+        os.environ.get('jiraUser'),
+        os.environ.get('api-token')
+    )
+    headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+    }
+
+    ## Preprocess the payload
+    data = {
+        "name": name,
+        "jql": jqlStr,
+        "description": "Created at " + datetime.now().strftime("%c"),
+        "sharePermissions": [{
+            "type": "group", "group": {"name": "AI Engineer"}}]
+    }
+    if "description" in settings:
+        data["description"] = settings["description"]
+    if "shareGroup" in settings:
+        data["sharePermissions"][0]["group"]["name"] = settings["shareGroup"]
+    payload = json.dumps( data )
+
+    response = requests.request(
+        "POST",
+        url,
+        data=payload,
+        headers=headers,
+        auth=auth
+    )
+
+    rslt = json.loads(response.text)
+    if "errorMessages" in rslt and len(rslt["errorMessages"])>0:
+        return {"status": False, "result": "".join(rslt["errorMessages"])}
+    if "errors" in rslt and len(rslt["errors"])>0:
+        return {"status": False, "result": rslt["errors"]}
+    if "errorMessages" in rslt or "errors" in rslt:
+        return {"status": False, "result": "invalid request"}
+
+    return {"status": True, "result": rslt["id"]}
 
 
 ###############################################################################
@@ -75,16 +140,16 @@ def filterExistsQ(name):
 #######################################
 #   mkFilter
 #   parameters:
-#       - name: name of a new filter
-#       - jql: Jira Query Language
+#   - name: name of a new filter
+#   - jql: Jira Query Language
 #######################################
-def mkFilter(name, jql):
-    print ("mkFilter")
-    ## check the filter name already exists in Jira
-    if len(filterExistsQ(name)):
+def mkFilter(name, jql, settings={}):
+    ## Check the filter name already exists in Jira
+    if filterExistsQ(name):
         return {
             "status": False,
             "result": "already exists"
         }
 
-    START HERE
+    ## Create a Jira filter
+    return(mkJiraFilter(name, jql, settings))

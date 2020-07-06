@@ -1,4 +1,4 @@
-def nextPageQ(resp):
+def nextPage(resp):
     ## if a response contains isLast, return
     if "isLast" in resp:
         return {

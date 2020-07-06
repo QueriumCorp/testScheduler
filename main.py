@@ -32,22 +32,25 @@ if __name__ == '__main__':
     # print ("\nSTART:", time.strftime("%c"))
 
     ### testing code
-    test.filterExistsQ()
-    sys.exit()
+    # test.mkFilter()
+    # sys.exit()
 
     ### Get request input
     req = input.getRequest()
-    # print ("input:", req)
 
     ### Search jira based on the req
-    result = jql.issueSearch(req, flatten=True)
-    # print ("result:", result)
+    search = jql.issueSearch(req, flatten=True)
+    result = {
+        "keys": search["result"]
+    }
 
     ### Export a filter based on a search jql
     if "makeFilter" in req:
-        filter.mkFilter(req.makeFilter, result.jql)
+        filterStts = filter.mkFilter(req["makeFilter"], search["jql"])
+        result["filter"] = filterStts
 
     ### Dump result as a json
-    print (json.dumps(result["result"]))
+    # jql.printJson(result)
+    print (json.dumps(result))
 
     # print ("\nEND:", time.strftime("%c"))
