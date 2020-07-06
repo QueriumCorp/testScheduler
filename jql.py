@@ -31,6 +31,10 @@ def jqLIssueSearch(data):
     if "jql" in data:
         return data["jql"]
 
+    ## make sure summary and labels fields in the data
+    assert "summary" in data
+    assert "labels" in data
+
     jqlAll = "summary ~ \""+data["summary"]+"\""
     if "labels" in data:
         jqlLbls = "Labels=\"" + ("\" AND Labels=\"".join(data["labels"])+"\"")
@@ -144,6 +148,74 @@ def getFields(flds, arr, flatten=False):
 
     return result
 
+#######################################
+#   Get a jira filter by name
+#   Parameter:
+#   - object with issue: jiraID: {"issue": "QUES-6019"}
+#   returns:
+#   -
+#######################################
+def getJiraFilter(route):
+    url = os.environ.get('companyUrl')+route
+    auth = HTTPBasicAuth(
+        os.environ.get('jiraUser'),
+        os.environ.get('api-token')
+    )
+    headers = {
+        "Accept": "application/json"
+    }
+    response = requests.request(
+        "GET",
+        url,
+        headers=headers,
+        auth=auth
+    )
+    filter = json.loads(response.text)
+    if len(filter["values"]) == 0:
+        return {"status": False, "result": "invalid filter"}
+    if len(filter["values"]) > 1:
+        return {"status": False, "result": "multiple filters were found"}
+
+    return {
+        "status": True,
+        "result": filter["values"][0]
+    }
+
+#######################################
+#   Get a jira filter by name
+#   Parameter:
+#   - object with issue: jiraID: {"issue": "QUES-6019"}
+#   returns:
+#   -
+#######################################
+def getJiraFilterByUrl(url):
+    auth = HTTPBasicAuth(
+        os.environ.get('jiraUser'),
+        os.environ.get('api-token')
+    )
+    headers = {
+        "Accept": "application/json"
+    }
+    response = requests.request(
+        "GET",
+        url,
+        headers=headers,
+        auth=auth
+    )
+    filter = json.loads(response.text)
+    # print("filter:", filter)
+
+    if "errorMessages" in filter or "errors" in filter:
+        return {"status": False, "result": "invalid url"}
+
+    return {
+        "status": True,
+        "jql": filter["jql"],
+        "searchUrl": filter["searchUrl"],
+        "id": filter["id"],
+        "name": filter["name"]
+    }
+
 ###############################################################################
 #   Get a jira question
 #   Parameter:
@@ -177,11 +249,14 @@ def getQuestion(data):
 ###############################################################################
 #   Issue search
 #   parameters:
-#       - summary: "OSCAG"
-#       - labels: ["label1", "label2"]
-#       - [flatten]: False means return without postprocessing the value
+#   - data: is a dictionary of jql or (summar and labels) and fields to return
+#   jql: {"jql": "project = QUES AND Labels = CSULAWeek01", "fields":["key"]}
+#   (summar and labels): {"summary": "OSCAGc07s01*", labels: ["CSULAWeek01"], "fields":["key"]}
+#   - [flatten]: False means return without postprocessing the value
+#   example: {"jql": "project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \"Mathematica Specification\" !~ MatchSpec", "fields":["key"]}
 #   returns:
-#       json
+#   If the return field is key and result is flattend, the function returns
+#   [{"key": "QUES-XXX1"}, {"key": "QUES-XXX2"}, ...]
 ###############################################################################
 def issueSearch(data, flatten=False):
     route, jql = buildJql("issueSearch", data)
@@ -247,3 +322,33 @@ def issueSearch(data, flatten=False):
     result["result"] = jqlRslt
 
     return result
+
+###############################################################################
+#   searchByFilter
+#   parameters:
+#   arg: {"useFilter": "anExistingFilterName", "fields":["key"]}'
+#   - useFilter: make sure the filter exists in Jira
+#   - fields: jira fields to be returned
+#   returns:
+#   The function returns filter information and issueSearch
+###############################################################################
+def searchByFilter(arg, flatten=False):
+    route, _ = buildJql("filterNameSearch", arg["useFilter"])
+    filterMeta1 = getJiraFilter(route)
+    ## If invalid filter
+    if not filterMeta1["status"]:
+        return {}
+    filterMeta2 = getJiraFilterByUrl(filterMeta1["result"]["self"])
+    ## If searchURL fails
+    if not filterMeta2["status"]:
+        return {}
+
+    arg["jql"] = filterMeta2["jql"]
+    return {
+        "filter": {
+            "name": filterMeta2["name"],
+            "result": filterMeta2["id"],
+            "status": filterMeta2["status"]
+        },
+        "issueSearch": issueSearch(arg, flatten)
+    }

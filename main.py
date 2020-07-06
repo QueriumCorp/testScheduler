@@ -16,6 +16,8 @@
 # python3 main.py '{"jql": "project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \"Mathematica Specification\" !~ MatchSpec", "fields":["key"]}'
 # or
 # python3 main.py '{"makeFilter": "aNewFilterName", "jql": "project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \"Mathematica Specification\" !~ MatchSpec", "fields":["key"]}'
+# or
+# python3 main.py '{"useFilter": "filterTest1", "fields":["key"]}'
 ###############################################################################
 import time
 import input
@@ -30,7 +32,6 @@ import json
 #   Main
 ###############################################################################
 if __name__ == '__main__':
-    # print ("\nSTART:", time.strftime("%c"))
 
     ### testing code
     # test.mkFilter()
@@ -38,20 +39,31 @@ if __name__ == '__main__':
 
     ### Get request input
     req = input.getRequest()
+    # print("req:", req)
+    # sys.exit()
 
     ### Search jira based on the req
-    search = jql.issueSearch(req, flatten=True)
-    result = {
-        "keys": search["result"]
-    }
+    if "useFilter" in req:
+        searchFilter = jql.searchByFilter(req, flatten=True)
+        if len(searchFilter) < 1:
+            print(searchFilter)
+            sys.exit()
+        result = {
+            "filter": searchFilter["filter"],
+            "keys": searchFilter["issueSearch"]["result"]
+        }
+    else:
+        search = jql.issueSearch(req, flatten=True)
+        result = {
+            "keys": search["result"]
+        }
 
-    ### Export a filter based on a search jql
-    if "makeFilter" in req:
+    ### Create a new filter based on the given jql
+    if "makeFilter" in req and "useFilter" not in req:
         filterStts = filter.mkFilter(req["makeFilter"], search["jql"])
+        filterStts["name"] = req["makeFilter"]
         result["filter"] = filterStts
 
     ### Dump result as a json
     # jql.printJson(result)
     print (json.dumps(result))
-
-    # print ("\nEND:", time.strftime("%c"))
