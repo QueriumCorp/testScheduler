@@ -177,11 +177,14 @@ def getQuestion(data):
 ###############################################################################
 #   Issue search
 #   parameters:
-#       - summary: "OSCAG"
-#       - labels: ["label1", "label2"]
-#       - [flatten]: False means return without postprocessing the value
+#   - data: is a dictionary of jql or (summar and labels) and fields to return
+#   jql: {"jql": "project = QUES AND Labels = CSULAWeek01", "fields":["key"]}
+#   (summar and labels): {"summary": "OSCAGc07s01*", labels: ["CSULAWeek01"], "fields":["key"]}
+#   - [flatten]: False means return without postprocessing the value
+#   example: {"jql": "project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \"Mathematica Specification\" !~ MatchSpec", "fields":["key"]}
 #   returns:
-#       json
+#   If the return field is key and result is flattend, the function returns
+#   [{"key": "QUES-XXX1"}, {"key": "QUES-XXX2"}, ...]
 ###############################################################################
 def issueSearch(data, flatten=False):
     route, jql = buildJql("issueSearch", data)
