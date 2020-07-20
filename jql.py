@@ -26,7 +26,7 @@ from urllib.parse import quote
 def printJson(data):
     print(json.dumps(data, sort_keys=True, indent=4, separators=(",", ": ")))
 
-def jqLIssueSearch(data):
+def jqlIssueSearch(data):
     ## if data contains jql, return its value. It is a jira query
     if "jql" in data:
         return data["jql"]
@@ -47,7 +47,7 @@ def jqLIssueSearch(data):
 
 def buildJql(type, data):
     if (type == "issueSearch"):
-        return ("/rest/api/3/search", jqLIssueSearch(data))
+        return ("/rest/api/3/search", jqlIssueSearch(data))
     if (type == "issue"):
         return ("/rest/api/3/issue/", data["issue"])
     if (type == "filterSearch"):
