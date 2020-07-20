@@ -10,6 +10,12 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 from urllib.parse import urlencode
+import dbConn
+
+def getRow():
+    print ("test - getRow")
+    tmp = dbConn.getRow("testSchedule", ["id"], [1], ["*"])
+    print (tmp)
 
 def mkFilter():
     print ("test - mkFilter")

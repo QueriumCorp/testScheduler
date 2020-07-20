@@ -34,7 +34,7 @@ import json
 if __name__ == '__main__':
 
     ### testing code
-    test.getRow()
+    test.getTask()
     sys.exit()
 
     ### Get request input
