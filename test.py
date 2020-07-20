@@ -10,6 +10,25 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 from urllib.parse import urlencode
+import dbConn
+
+def getTask():
+    print ("test - getTask")
+    tmp = dbConn.getTask(["id"], [1], ["*"])
+    print (tmp)
+
+def db():
+    print ("test - dbConn")
+    tmp = dbConn.mkSql("getTask", ["status"], ["*"])
+    tmp = dbConn.mkSql("getTask", ["status"], ["id","pid","host"])
+    # tmp = dbConn.mkSql("getTasks", ["status"], ["*"])
+    print (tmp)
+    try:
+        tmp = dbConn.mkSql("getTasks", ["status"], ["*"])
+    except Exception as err:
+        print ("Error:", err)
+
+    print (tmp)
 
 def mkFilter():
     print ("test - mkFilter")
