@@ -21,16 +21,17 @@ import jql
 import util
 from urllib.parse import urlencode
 from datetime import datetime
+import logging
 
 ###############################################################################
-#   Support functions
+# Support functions
 ###############################################################################
 
 #######################################
-#   Does filter already exists
-#   parameters:
-#   - name: name of a new filter
-#   - jql: Jira Query Language
+# Does filter already exists
+# parameters:
+# name: name of a new filter
+# jql: Jira Query Language
 #######################################
 def filterExistsQ(name):
     route, _ = jql.buildJql("filterNameSearch", name)
@@ -70,22 +71,23 @@ def filterExistsQ(name):
     return False
 
 #######################################
-#   Create a filter in Jira
-#   NOTE: The api-token that is used to create filter belongs to Evan's account.
-#   If Evan is not in a group, he doesn't have enough privilege to creat a
-#   filter for it. Fix it: generate api-token under an account that has higher
-#   privilege.
-#   parameters:
-#   - name: name of a new filter
-#   - jqlStr: Jira Query Language
-#   - settings: pass any settings for creating jira filter. If the share
-#     permission is not shareGroup, please look at the refs for
-#     addSharePermission
-#   return:
-#   {"status": boolean, "result": "<filterID>" or {errors}}
-#   Refs:
-#   https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-post
-#   https://docs.atlassian.com/software/jira/docs/api/REST/1000.679.0/#api/2/filter-addSharePermission
+# Create a filter in Jira
+# NOTE: The api-token that is used to create filter belongs to Evan's account.
+# It's not possible Evan to create a filter for a group that he is not a
+# member of because he doesn't have enough privilege. To fix it: generate
+# api-token under an account that has the privilege
+# privilege.
+# parameters:
+# name: name of a new filter
+# jqlStr: Jira Query Language
+# settings: pass any settings for creating jira filter. If the share
+# permission is not shareGroup, please look at the refs for
+# addSharePermission
+# return:
+# {"status": boolean, "result": "<filterID>" or {errors}}
+# Refs:
+# https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-post
+# https://docs.atlassian.com/software/jira/docs/api/REST/1000.679.0/#api/2/filter-addSharePermission
 #######################################
 def mkJiraFilter(name, jqlStr, settings):
     route, _ = jql.buildJql("createFilter", name)
@@ -134,14 +136,14 @@ def mkJiraFilter(name, jqlStr, settings):
 
 
 ###############################################################################
-#   Main logic
+# Main logic
 ###############################################################################
 
 #######################################
-#   mkFilter
-#   parameters:
-#   - name: name of a new filter
-#   - jql: Jira Query Language
+# mkFilter
+# parameters:
+# name: name of a new filter
+# jql: Jira Query Language
 #######################################
 def mkFilter(name, jql, settings={}):
     ## Check the filter name already exists in Jira
@@ -152,4 +154,5 @@ def mkFilter(name, jql, settings={}):
         }
 
     ## Create a Jira filter
+    logging.info(f"Created a new filter in Jira {name}")
     return(mkJiraFilter(name, jql, settings))

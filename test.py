@@ -11,6 +11,15 @@ load_dotenv()
 import os
 from urllib.parse import urlencode
 import dbConn
+import schedule
+import datetime
+
+def scheduleTask():
+    print ("schedule - task")
+    data = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'validStatus': '["invalid"]', 'status': 'pending', 'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
+    # data = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"makeFilter": "filterTest3", "qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'validStatus': '["followTestingM","testing","development","followTesting","live","approved","aiTesting","jsonToPath"]', 'status': 'pending', 'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
+    # data = {'id': 1, 'name': '5731520200708080941', 'jira': '{"useFilter": "filterTest1", "fields":["key"]}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'validStatus': '["followTestingM","testing","development","followTesting","live","approved","aiTesting","jsonToPath"]', 'status': 'pending', 'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
+    schedule.task(data)
 
 def getRow():
     print ("test - getRow")

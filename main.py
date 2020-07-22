@@ -19,6 +19,9 @@
 # or
 # python3 main.py '{"useFilter": "filterTest1", "fields":["key"]}'
 ###############################################################################
+from dotenv import load_dotenv
+load_dotenv()
+import os
 import time
 import input
 import jql
@@ -26,7 +29,18 @@ import filter
 import test
 import sys
 import json
+import logging
+import task
+import schedule
 
+
+###############################################################################
+# Support functions
+###############################################################################
+
+#######################################
+#
+#######################################
 
 ###############################################################################
 #   Main
@@ -34,8 +48,18 @@ import json
 if __name__ == '__main__':
 
     ### testing code
-    test.getRow()
+    test.scheduleTask()
     sys.exit()
+
+    ### Get next task
+    gotPendingTask = False
+    while not gotPendingTask:
+        task = task.next()
+        if len(task)>0:
+            schedule.task(task)
+        else:
+            logging.info("No pending tasks: sleeping")
+            time.sleep(os.environ.get('sleepTime'))
 
     ### Get request input
     req = input.getRequest()
