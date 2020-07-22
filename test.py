@@ -14,6 +14,16 @@ import dbConn
 import schedule
 import datetime
 
+def rmExistingPaths():
+    data = [
+        {"name":"a", "path_id":1, "question_id":2},
+        {"name":"a", "path_id":3, "question_id":4},
+        {"name":"a", "path_id":5, "question_id":6},
+        {"name":"a", "path_id":7, "question_id":8},
+    ]
+
+    dbConn.rmExistingPaths(data)
+
 def scheduleTask():
     print ("schedule - task")
     data = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'validStatus': '["invalid"]', 'status': 'pending', 'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}

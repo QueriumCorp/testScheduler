@@ -40,6 +40,19 @@ def getFields(tbl):
 
     return switcher.get(tbl, [])
 
+#######################################
+# Handle test paths already in the testPath table.
+# - Remove the test paths that are already in pending status
+# - Change status to pending if they are in completed status and remove
+#######################################
+def rmExistingPaths(data):
+    test = []
+    keys = ['name', 'path_id']
+    for row in data:
+        test.append({k: row[k] for k in keys})
+
+
+
 ###############################################################################
 # Main logic
 ###############################################################################

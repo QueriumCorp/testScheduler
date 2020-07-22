@@ -48,7 +48,8 @@ import schedule
 if __name__ == '__main__':
 
     ### testing code
-    test.scheduleTask()
+    # test.scheduleTask()
+    test.rmExistingPaths()
     sys.exit()
 
     ### Get next task
