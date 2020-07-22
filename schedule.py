@@ -98,8 +98,6 @@ def defaultSettings(purpose, settings):
 # Add paths in a question to testPath
 #######################################
 def qstnToTestPath(info, settings):
-    # print ("unq:", info["key"])
-    # print ("validStatus:", json.loads(settings["validStatus"]))
 
     ### Get question_id of a question unq
     qstnId = dbConn.getRow("question", ["unq"], [info["key"]], ["id"])
@@ -135,9 +133,10 @@ def qstnToTestPath(info, settings):
     dbConn.addTestPaths(pathSttngs)
 
     sys.exit()
+    return True
 
 #######################################
-# Add paths in questions to testPath
+# Add questions to testPath
 #######################################
 def qstnsToTestPath(qstns, settings):
     print ("qstnsToTestPath", len(qstns["keys"]))
@@ -162,5 +161,3 @@ def task(scheduleData):
 
     ### Add questions in testPath
     qstnsToTestPath(jiraData, scheduleData)
-
-
