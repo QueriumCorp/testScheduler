@@ -196,3 +196,25 @@ def execQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
         raise Exception("Error in pymysql")
     finally:
         conn.close()
+
+#######################################
+# Update a table in the database
+# parameters:
+#######################################
+def modTbl(tbl, colsCond, valsCond, col, val):
+    sqlCond = "=%s AND ".join(colsCond)+"=%s "
+    sql = f"UPDATE {tbl} SET {col}='{val}' WHERE {sqlCond};"
+    logging.debug(f"modTbl - sql: {sql}")
+
+    conn = pymysql.connect(
+        os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
+        os.environ.get('DB_PASS'), os.environ.get('DB_NAME'),
+        use_unicode=True, charset="utf8")
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, tuple(valsCond))
+            conn.commit()
+    except pymysql.Error:
+        raise Exception("Error in pymysql")
+    finally:
+        conn.close()
