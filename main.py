@@ -49,9 +49,10 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
 
     ### testing code
+    test.modTbl()
     # test.qstnToTestPath()
     # test.getRow()
-    test.scheduleTask()
+    # test.scheduleTask()
     # test.rmExistingPaths()
     # sys.exit()
 
@@ -63,4 +64,5 @@ if __name__ == '__main__':
             schedule.task(task)
         else:
             logging.info("No pending tasks: sleeping")
-            time.sleep(os.environ.get('sleepTime'))
+            time.sleep(int(os.environ.get('sleepTime')))
+        break

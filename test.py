@@ -14,6 +14,16 @@ import dbConn
 import schedule
 import datetime
 
+def modTbl():
+    tbl = "testSchedule"
+    colsCond = ["id"]
+    valsCond = [1]
+    col = "status"
+    val = "running"
+
+    dbConn.modTbl(tbl, colsCond, valsCond, col, val)
+
+
 def qstnToTestPath():
     info = {'key': 'QUES-12879'}
     settings = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'validStatus': '["followTestingM","testing","development","followTesting","live","approved","aiTesting","jsonToPath"]', 'status': 'pending', 'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
