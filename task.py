@@ -19,5 +19,7 @@ def next():
     data = dbConn.getRow(
         "testSchedule", ["status"], ["pending"],
         dbConn.getFields("testSchedule"))
+    if data is None or len(data)<1:
+        return []
 
     return dbConn.mkObj(dbConn.getFields("testSchedule"), data)
