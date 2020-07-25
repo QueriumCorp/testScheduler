@@ -14,10 +14,21 @@ load_dotenv()
 import pymysql
 import os
 import json
+import logging
+import sys
 
 ###############################################################################
 # Support functions
 ###############################################################################
+
+#######################################
+# Make objects
+#######################################
+def mkObj(keys, data):
+    return dict(zip(keys, data))
+
+def mkObjs(keys, data):
+    return list(map(lambda aRow: dict(zip(keys, aRow)), data))
 
 #######################################
 # Get fiedls in a table
@@ -39,19 +50,6 @@ def getFields(tbl):
     }
 
     return switcher.get(tbl, [])
-
-#######################################
-# Handle test paths already in the testPath table.
-# - Remove the test paths that are already in pending status
-# - Change status to pending if they are in completed status and remove
-#######################################
-def rmExistingPaths(data):
-    test = []
-    keys = ['name', 'path_id']
-    for row in data:
-        test.append({k: row[k] for k in keys})
-
-
 
 ###############################################################################
 # Main logic
@@ -96,7 +94,6 @@ def getRow(tbl, cols, vals, colsRtrn, fltr=""):
 # [flat]: flatten the result
 #######################################
 def getPathsInQstn(identifier, statuses, colsRtrn, fltr="", flat=True):
-    print ("getPathsInQstn")
     rtrn = ",".join(colsRtrn)
     stts = "\""+"\",\"".join(statuses)+"\""
     sql = f"SELECT {rtrn} FROM path WHERE status NOT IN ({stts}) AND "+\
@@ -107,7 +104,7 @@ def getPathsInQstn(identifier, statuses, colsRtrn, fltr="", flat=True):
         sql = f"SELECT {rtrn} FROM path WHERE status NOT IN ({stts}) AND "+\
             f"id IN (SELECT path_id FROM question_path "+\
             f"WHERE question_id={identifier}) {fltr};"
-    print (sql)
+    # print (sql)
 
     conn = pymysql.connect(
         os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
@@ -150,6 +147,50 @@ def addTestPaths(data):
     try:
         with conn.cursor() as cursor:
             cursor.execute(sql, sqlVals)
+            conn.commit()
+    except pymysql.Error:
+        raise Exception("Error in pymysql")
+    finally:
+        conn.close()
+
+#######################################
+# Fetch all in a sql query
+# parameters:
+#######################################
+def fetchallQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
+    # print("sql", sql)
+    # print("vals", vals)
+    conn = pymysql.connect(
+        os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
+        os.environ.get('DB_PASS'), os.environ.get('DB_NAME'),
+        use_unicode=True, charset="utf8")
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, vals)
+            result = cursor.fetchall()
+            # print("result", result)
+    except pymysql.Error:
+        raise Exception("Error in pymysql")
+    finally:
+        conn.close()
+
+    if mkObjQ:
+        return mkObjs(fldsRtrn, result)
+
+    return result
+
+#######################################
+# Run a sql query
+# parameters:
+#######################################
+def execQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
+    conn = pymysql.connect(
+        os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
+        os.environ.get('DB_PASS'), os.environ.get('DB_NAME'),
+        use_unicode=True, charset="utf8")
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, vals)
             conn.commit()
     except pymysql.Error:
         raise Exception("Error in pymysql")
