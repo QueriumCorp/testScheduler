@@ -25,7 +25,7 @@ import os
 import time
 import input
 import jql
-import filter
+import jiraFilter
 import test
 import sys
 import json
@@ -33,6 +33,7 @@ import logging
 import task
 import schedule
 
+logging.basicConfig(level=logging.DEBUG)
 
 ###############################################################################
 # Support functions
@@ -48,9 +49,11 @@ import schedule
 if __name__ == '__main__':
 
     ### testing code
-    # test.scheduleTask()
-    test.rmExistingPaths()
-    sys.exit()
+    # test.qstnToTestPath()
+    # test.getRow()
+    test.scheduleTask()
+    # test.rmExistingPaths()
+    # sys.exit()
 
     ### Get next task
     gotPendingTask = False
@@ -61,34 +64,3 @@ if __name__ == '__main__':
         else:
             logging.info("No pending tasks: sleeping")
             time.sleep(os.environ.get('sleepTime'))
-
-    ### Get request input
-    req = input.getRequest()
-    # print("req:", req)
-    # sys.exit()
-
-    ### Search jira based on the req
-    if "useFilter" in req:
-        searchFilter = jql.searchByFilter(req, flatten=True)
-        if len(searchFilter) < 1:
-            print(searchFilter)
-            sys.exit()
-        result = {
-            "filter": searchFilter["filter"],
-            "keys": searchFilter["issueSearch"]["result"]
-        }
-    else:
-        search = jql.issueSearch(req, flatten=True)
-        result = {
-            "keys": search["result"]
-        }
-
-    ### Create a new filter based on the given jql
-    if "makeFilter" in req and "useFilter" not in req:
-        filterStts = filter.mkFilter(req["makeFilter"], search["jql"])
-        filterStts["name"] = req["makeFilter"]
-        result["filter"] = filterStts
-
-    ### Dump result as a json
-    # jql.printJson(result)
-    print (json.dumps(result))
