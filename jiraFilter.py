@@ -60,7 +60,7 @@ def filterExistsQ(name):
 
         rsltPart = json.loads(response.text)
         for val in rsltPart["values"]:
-            print ("name: ", val["name"])
+            logging.debug(f"name: {val['name']}")
             if val["name"] == name:
                 return True
 
