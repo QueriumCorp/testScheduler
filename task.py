@@ -3,6 +3,7 @@
 # Handle tasks
 ###############################################################################
 import dbConn
+import logging
 
 ###############################################################################
 # Support functions
@@ -20,6 +21,7 @@ def next():
         "testSchedule", ["status"], ["pending"],
         dbConn.getFields("testSchedule"))
     if data is None or len(data)<1:
+        logging.debug("No pending tasks")
         return []
 
     return dbConn.mkObj(dbConn.getFields("testSchedule"), data)

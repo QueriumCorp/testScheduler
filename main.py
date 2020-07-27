@@ -54,15 +54,18 @@ if __name__ == '__main__':
     # test.getRow()
     # test.scheduleTask()
     # test.rmExistingPaths()
-    # sys.exit()
+    sys.exit()
 
     ### Get next task
-    gotPendingTask = False
-    while not gotPendingTask:
-        task = task.next()
-        if len(task)>0:
-            schedule.task(task)
-        else:
-            logging.info("No pending tasks: sleeping")
-            time.sleep(int(os.environ.get('sleepTime')))
-        break
+    terminateQ = False
+    while not terminateQ:
+        try:
+            task = task.next()
+            if len(task)>0:
+                schedule.task(task)
+            else:
+                logging.info("No pending tasks: sleeping")
+                time.sleep(int(os.environ.get('sleepTime')))
+        except KeyboardInterrupt:
+            ### Add cleanup code if needed
+            terminateQ = True
