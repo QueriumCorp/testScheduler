@@ -49,21 +49,21 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
 
     ### testing code
-    test.modTbl()
+    # test.modTbl()
     test.modMultiVals()
     # test.qstnToTestPath()
     # test.getRow()
     # test.scheduleTask()
     # test.rmExistingPaths()
-    sys.exit()
+    # sys.exit()
 
     ### Get next task
     terminateQ = False
     while not terminateQ:
         try:
-            task = task.next()
-            if len(task)>0:
-                schedule.task(task)
+            aTask = task.next()
+            if len(aTask)>0:
+                schedule.task(aTask)
             else:
                 logging.info("No pending tasks: sleeping")
                 time.sleep(int(os.environ.get('sleepTime')))

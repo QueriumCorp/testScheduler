@@ -180,17 +180,24 @@ def rmExistingPaths(keysCond, data):
 
 #######################################
 # Add paths in a question to testPath
+# Return:
+# status: True/False
+# result: a number of test paths in a question added in testPath
 #######################################
 def qstnToTestPath(info, settings):
     logging.info(f"Scheduling paths in {info['key']}")
     ### Get question_id of a question unq
     qstnId = dbConn.getRow("question", ["unq"], [info["key"]], ["id"])
     if qstnId is None or len(qstnId)<1:
-        logging.warning(f"{info['key']} was not found in UDB")
-        return False
+        return {
+            "status": False,
+            "result": f"{info['key']} was not found in UDB"
+        }
     if len(qstnId)>1:
-        logging.warning(f"Multiple rows have the same {info['key']}: {qstnId}")
-        return False
+        return {
+            "status": False,
+            "result": f"Multiple rows have the same {info['key']}: {qstnId}"
+        }
 
     ### Get paths in a question
     paths = dbConn.getPathsInQstn(
@@ -199,6 +206,11 @@ def qstnToTestPath(info, settings):
         ["id"]
     )
     logging.info(f"Number of paths in UDB: {len(paths)}")
+    if len(paths)<1:
+        return {
+            "status": True,
+            "result": 0
+        }
 
     ### If [paths] > limitPaths, sample the paths
     if "limitPaths" in settings and settings["limitPaths"]!=-1:
@@ -224,10 +236,16 @@ def qstnToTestPath(info, settings):
     else:
         logging.info(f"No new test paths to schedule")
 
-    return True
+    return {
+        "status": True,
+        "result": len(newPaths)
+    }
 
 #######################################
 # Add questions to testPath
+# Return:
+# status: True/False
+# result: a number of questions are added in testPath
 #######################################
 def qstnsToTestPath(qstns, settings):
     if len(qstns["keys"])<1:
@@ -235,8 +253,13 @@ def qstnsToTestPath(qstns, settings):
         return {"status": True, "result": 0}
 
     logging.info (f"Jira Questions: {len(qstns['keys'])}")
+    result = []
     for qstnInfo in qstns["keys"]:
-        qstnToTestPath(qstnInfo, settings)
+        result.append(qstnToTestPath(qstnInfo, settings))
+        break
+
+    return result
+
 
 ###############################################################################
 # Main logic
@@ -272,5 +295,6 @@ def task(scheduleData):
             return fltrRslt
 
     ### Add questions in testPath
-    START HERE
-    qstnsToTestPath(jiraData, scheduleData)
+    rsltQstns = qstnsToTestPath(jiraData, scheduleData)
+    print("rsltQstns")
+    print(rsltQstns)

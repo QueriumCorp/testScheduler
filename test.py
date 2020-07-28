@@ -28,7 +28,7 @@ def modMultiVals():
     colsCond = ["id"]
     valsCond = [1]
     col = ["status","msg"]
-    val = ["running","hi"]
+    val = ["pending","hi"]
 
     dbConn.modMultiVals(tbl, colsCond, valsCond, col, val)
 
