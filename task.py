@@ -16,10 +16,20 @@ import dbConn
 # Main logic
 ###############################################################################
 def next():
+    tbl = "testSchedule"
+    colStts = "status"
+
+    ### Get a pending task
     data = dbConn.getRow(
-        "testSchedule", ["status"], ["pending"],
+        tbl, [colStts], ["pending"],
         dbConn.getFields("testSchedule"))
     if data is None or len(data)<1:
         return []
 
-    return dbConn.mkObj(dbConn.getFields("testSchedule"), data)
+    ### Convert the data into an object
+    rsltObj = dbConn.mkObj(dbConn.getFields("testSchedule"), data)
+
+    ### Change the task's status to running
+    dbConn.modTbl(tbl, ["id"], [rsltObj["id"]], colStts, "running")
+
+    return rsltObj
