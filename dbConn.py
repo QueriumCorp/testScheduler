@@ -218,3 +218,22 @@ def modTbl(tbl, colsCond, valsCond, col, val):
         raise Exception("Error in pymysql")
     finally:
         conn.close()
+
+def modMultiVals(tbl, colsCond, valsCond, cols, vals):
+    sqlSet = "=%s,".join(cols)+"=%s"
+    sqlCond = "=%s AND ".join(colsCond)+"=%s "
+    sql = f"UPDATE {tbl} SET {sqlSet} WHERE {sqlCond};"
+    logging.debug(f"modTbl - sql: {sql}")
+
+    conn = pymysql.connect(
+        os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
+        os.environ.get('DB_PASS'), os.environ.get('DB_NAME'),
+        use_unicode=True, charset="utf8")
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, tuple(vals+valsCond))
+            conn.commit()
+    except pymysql.Error:
+        raise Exception("Error in pymysql")
+    finally:
+        conn.close()

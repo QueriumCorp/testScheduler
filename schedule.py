@@ -26,18 +26,30 @@ def jiraSearch(req):
         searchFilter = jql.searchByFilter(req, flatten=True)
         if len(searchFilter) > 0:
             result = {
+                "status": True,
                 "filter": searchFilter["filter"],
                 "keys": searchFilter["issueSearch"]["result"]
             }
         else:
             logging.warning(f"Invalid filter {req['useFilter']}")
+            result = {
+                "status": False,
+                "result": f"Invalid filter {req['useFilter']}"
+            }
     else:
         logging.info("Jira search is based on a jql")
         search = jql.issueSearch(req, flatten=True)
-        result = {
-            "keys": search["result"],
-            "jql": search["jql"]
-        }
+        if search["status"]:
+            result = {
+                "status": True,
+                "keys": search["result"],
+                "jql": search["jql"]
+            }
+        else:
+            result = {
+                "status": False,
+                "result": search["result"]
+            }
 
     return result
 
@@ -230,22 +242,35 @@ def qstnsToTestPath(qstns, settings):
 # Main logic
 ###############################################################################
 def task(scheduleData):
+    print("scheduleData")
+    print(scheduleData)
     ### Search request
     req = json.loads(scheduleData["jira"])
     logging.debug(f"Jira request: {req}")
 
     ### Jira respond of the request
     jiraData = jiraSearch(req)
+    # print("jiraData")
     # print(jiraData)
+    if jiraData["status"]==False:
+        dbConn.modMultiVals(
+            "testSchedule",
+            ["id"], scheduleData["id"],
+            ["status", "msg"], ["Failed", jiraData["result"]])
+        logging.info(f"Failed on jiraSearch: {jiraData['result']}")
+        return jiraData
 
     ### Create a new jiraFilter based on the given jql
     if "makeFilter" in req and "useFilter" not in req:
-        filterStts = jiraFilter.mkFilter(req["makeFilter"], jiraData["jql"])
-        if filterStts["status"] == True:
-            logging.info(f"Created a Jira filter: {req['makeFilter']}")
-        else:
+        fltrRslt = jiraFilter.mkFilter(req["makeFilter"], jiraData["jql"])
+        if fltrRslt["status"]==False:
+            dbConn.modMultiVals(
+                "testSchedule",
+                ["id"], scheduleData["id"],
+                ["status", "msg"], ["Failed", fltrRslt["result"]])
             logging.info(f"Unable to create a Jira filter: {req['makeFilter']}")
-    sys.exit()
+            return fltrRslt
 
     ### Add questions in testPath
+    START HERE
     qstnsToTestPath(jiraData, scheduleData)

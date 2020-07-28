@@ -23,6 +23,15 @@ def modTbl():
 
     dbConn.modTbl(tbl, colsCond, valsCond, col, val)
 
+def modMultiVals():
+    tbl = "testSchedule"
+    colsCond = ["id"]
+    valsCond = [1]
+    col = ["status","msg"]
+    val = ["running","hi"]
+
+    dbConn.modMultiVals(tbl, colsCond, valsCond, col, val)
+
 
 def qstnToTestPath():
     info = {'key': 'QUES-12879'}
