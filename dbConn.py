@@ -36,7 +36,7 @@ def mkObjs(keys, data):
 def getFields(tbl):
     switcher = {
         "testSchedule": [
-            "id","name","jira","author","gradeStyle","policies","validStatus",
+            "id","name","jira","author","gradeStyle","policies","skipStatuses",
             "status","limitPaths","limitStepTime","limitSteps","limitPathTime","host","pid","gitBranch","gitHash","mmaVersion","timeOutTime",
             "ruleMatchTimeOutTime","msg","jiraResp","started","finished","created"
             ],

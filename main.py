@@ -49,8 +49,8 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
 
     ### testing code
-    # test.modTbl()
-    test.modMultiVals()
+    test.modTbl()
+    # test.modMultiVals()
     # test.qstnToTestPath()
     # test.getRow()
     # test.scheduleTask()

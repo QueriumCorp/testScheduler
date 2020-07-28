@@ -200,9 +200,10 @@ def qstnToTestPath(info, settings):
         }
 
     ### Get paths in a question
+    # print (settings["skipStatuses"])
     paths = dbConn.getPathsInQstn(
         qstnId[0],
-        json.loads(settings["validStatus"]),
+        json.loads(settings["skipStatuses"]),
         ["id"]
     )
     logging.info(f"Number of paths in UDB: {len(paths)}")
@@ -254,9 +255,12 @@ def qstnsToTestPath(qstns, settings):
 
     logging.info (f"Jira Questions: {len(qstns['keys'])}")
     result = []
+    debugCnt = 0
     for qstnInfo in qstns["keys"]:
         result.append(qstnToTestPath(qstnInfo, settings))
-        break
+        if debugCnt > 2:
+            break
+        debugCnt += 1
 
     return result
 
