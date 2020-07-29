@@ -3,6 +3,7 @@
 # Handle tasks
 ###############################################################################
 import dbConn
+from datetime import datetime
 
 ###############################################################################
 # Support functions
@@ -28,8 +29,5 @@ def next():
 
     ### Convert the data into an object
     rsltObj = dbConn.mkObj(dbConn.getFields("testSchedule"), data)
-
-    ### Change the task's status to running
-    dbConn.modTbl(tbl, ["id"], [rsltObj["id"]], colStts, "running")
 
     return rsltObj

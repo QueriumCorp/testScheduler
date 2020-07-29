@@ -257,7 +257,9 @@ def qstnsToTestPath(qstns, settings):
     result = []
     debugCnt = 0
     for qstnInfo in qstns["keys"]:
-        result.append(qstnToTestPath(qstnInfo, settings))
+        rsltQstn = qstnToTestPath(qstnInfo, settings)
+        rsltQstn["unq"] = qstnInfo['key']
+        result.append(rsltQstn)
         if debugCnt > 2:
             break
         debugCnt += 1
@@ -269,36 +271,64 @@ def qstnsToTestPath(qstns, settings):
 # Main logic
 ###############################################################################
 def task(scheduleData):
-    print("scheduleData")
-    print(scheduleData)
+    # print("scheduleData")
+    # print(scheduleData)
+
+    tbl = "testSchedule"
+
+    ### Change the task's status to running and started time
+    dbConn.modMultiVals(tbl, ["id"], [scheduleData["id"]],
+        ["status", "started"], ["running", datetime.now()]
+    )
+
     ### Search request
     req = json.loads(scheduleData["jira"])
     logging.debug(f"Jira request: {req}")
 
     ### Jira respond of the request
     jiraData = jiraSearch(req)
-    # print("jiraData")
-    # print(jiraData)
+
+    ### If jira request fails, update testSchdule
     if jiraData["status"]==False:
         dbConn.modMultiVals(
-            "testSchedule",
+            tbl,
             ["id"], scheduleData["id"],
-            ["status", "msg"], ["Failed", jiraData["result"]])
+            ["status", "finished", "msg"],
+            ["Failed", datetime.now(), jiraData["result"]])
         logging.info(f"Failed on jiraSearch: {jiraData['result']}")
         return jiraData
+
+    ### Update testSchedue with the jira result
+    dbConn.modMultiVals(
+        tbl,
+        ["id"], [scheduleData["id"]],
+        ["jiraResp"], [json.dumps(jiraData["keys"], separators=(',', ':'))])
 
     ### Create a new jiraFilter based on the given jql
     if "makeFilter" in req and "useFilter" not in req:
         fltrRslt = jiraFilter.mkFilter(req["makeFilter"], jiraData["jql"])
         if fltrRslt["status"]==False:
             dbConn.modMultiVals(
-                "testSchedule",
+                tbl,
                 ["id"], scheduleData["id"],
-                ["status", "msg"], ["Failed", fltrRslt["result"]])
+                ["status", "finished", "msg"],
+                ["Failed", datetime.now(), fltrRslt["result"]])
             logging.info(f"Unable to create a Jira filter: {req['makeFilter']}")
             return fltrRslt
 
     ### Add questions in testPath
     rsltQstns = qstnsToTestPath(jiraData, scheduleData)
-    print("rsltQstns")
-    print(rsltQstns)
+
+    ### Report failed questions
+    failedQstns = list(filter(lambda x: x["status"]==False, rsltQstns))
+    if len(failedQstns)>0:
+        logging.warning(f"Failed on adding questions: {failedQstns}")
+    dbConn.modMultiVals(
+        tbl,
+        ["id"], [scheduleData["id"]],
+        ["status", "finished", "msg"],
+        [
+            "success" if len(failedQstns)==0 else "failedSome",
+            datetime.now(),
+            json.dumps(rsltQstns, separators=(',', ':'))
+        ])

@@ -50,6 +50,7 @@ if __name__ == '__main__':
 
     ### testing code
     test.modTbl()
+    # test.modMultiVals2()
     # test.modMultiVals()
     # test.qstnToTestPath()
     # test.getRow()
