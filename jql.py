@@ -19,6 +19,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 from urllib.parse import quote
+import logging
 
 ###############################################################################
 #   Support functions
@@ -57,7 +58,7 @@ def buildJql(type, data):
     if (type == "createFilter"):
         return ("/rest/api/3/filter", "")
 
-    print ("buildJql: invalid type")
+    logging.warning (f"buildJql: invalid type {type}")
     return False
 
 def fieldToCust(field):
@@ -297,7 +298,7 @@ def issueSearch(data, flatten=False):
 
         # If request fails, return the error code
         if response.status_code != 200:
-            return response.status_code
+            return {"status": False, "result": response.status_code}
 
         # Exiting the while loop conditions
         rsltPrt = json.loads(response.text)
@@ -319,6 +320,7 @@ def issueSearch(data, flatten=False):
                 flatten=flatten))
             else:
                 jqlRslt.extend(rsltPrt["issues"])
+    result["status"] = True
     result["result"] = jqlRslt
 
     return result
