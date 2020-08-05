@@ -32,6 +32,7 @@ import json
 import logging
 import task
 import schedule
+import repo
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -49,7 +50,9 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
 
     ### testing code
-    test.modTbl()
+    # test.taskTest()
+    # test.repoTest()
+    # test.modTbl()
     # test.modMultiVals2()
     # test.modMultiVals()
     # test.qstnToTestPath()
@@ -64,6 +67,10 @@ if __name__ == '__main__':
         try:
             aTask = task.next()
             if len(aTask)>0:
+                ## If the value of gitHash is 'latest', get the latest commit
+                ## hash from GitHub
+                if aTask["gitHash"].lower()=="latest" and "gitBranch" in aTask:
+                    aTask["gitHash"] = repo.getGitHash(aTask["gitBranch"])
                 schedule.task(aTask)
             else:
                 logging.info("No pending tasks: sleeping")
