@@ -217,6 +217,30 @@ def getJiraFilterByUrl(url):
         "name": filter["name"]
     }
 
+#######################################
+#  Get a json file
+#######################################
+def fileToJson(file):
+    with open(file) as json_file:
+        data = json.load(json_file)
+
+    return data
+
+#######################################
+#  Save data into a json file
+#######################################
+def jsonToFile(file, data):
+    with open(file, 'w') as outfile:
+        json.dump(data, outfile)
+
+#######################################
+#  Get only key fields
+#######################################
+def getFld(fld, data):
+    rslt = map(lambda x: x[fld], data["result"])
+    return list(rslt)
+
+
 ###############################################################################
 #   Get a jira question
 #   Parameter:
@@ -354,3 +378,32 @@ def searchByFilter(arg, flatten=False):
         },
         "issueSearch": issueSearch(arg, flatten)
     }
+
+if __name__ == '__main__':
+    if len(sys.argv)<2:
+        print("Provide full path to a json:")
+        print("python3 jql.py /path/to/file.json")
+        sys.exit(1)
+
+    ## Get filter argument
+    data = fileToJson(sys.argv[1])
+
+    ## Get the filter result from Jira
+    jqlRslt = issueSearch(data, True)
+    if jqlRslt["status"]!=True:
+        print("Unable to run \"jql\" in", sys.argv[1])
+        sys.exit()
+
+    ## Delete the result file if it already exists
+    if os.path.exists(data["fileOut"]):
+        os.remove(data["fileOut"])
+
+    ## Extract only keys from the result
+    result = getFld("key", jqlRslt)
+    jsonToFile(data["fileOut"], result)
+
+    ## Write the result in the output file
+    if os.path.exists(data["fileOut"]):
+        print("result is in", data["fileOut"])
+    else:
+        print("unable to create:", data["fileOut"])
