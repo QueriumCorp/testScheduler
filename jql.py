@@ -59,11 +59,7 @@ def buildJql(type, data):
     if (type == "createFilter"):
         return ("/rest/api/3/filter", "")
 
-    if "3.6" in platform.python_version():
-        logging.warning (f"buildJql: invalid type {type}")
-    else:
-        logging.warning ("buildJql: invalid type "+type)
-
+    logging.warning ("buildJql: invalid type "+type)
     return False
 
 def fieldToCust(field):
