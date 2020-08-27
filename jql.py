@@ -20,6 +20,7 @@ from requests.auth import HTTPBasicAuth
 import json
 from urllib.parse import quote
 import logging
+import platform
 
 ###############################################################################
 #   Support functions
@@ -58,7 +59,11 @@ def buildJql(type, data):
     if (type == "createFilter"):
         return ("/rest/api/3/filter", "")
 
-    logging.warning (f"buildJql: invalid type {type}")
+    if "3.6" in platform.python_version():
+        logging.warning (f"buildJql: invalid type {type}")
+    else:
+        logging.warning ("buildJql: invalid type "+type)
+
     return False
 
 def fieldToCust(field):
