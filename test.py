@@ -16,9 +16,17 @@ from datetime import datetime
 import json
 import repo
 import task
-# import MySQLdb
 import mysql.connector
 from mysql.connector import errorcode
+
+def modMultiVals():
+    tbl = "testSchedule"
+    colsCond = ["id"]
+    valsCond = [1]
+    col = ["status","msg"]
+    val = ["pending","hi"]
+
+    dbConn.modMultiVals(tbl, colsCond, valsCond, col, val)
 
 def modTbl():
     tbl = "testSchedule"
@@ -98,14 +106,7 @@ def modMultiVals2():
     dbConn.modMultiVals(tbl, colsCond, valsCond, col, val)
 
 
-def modMultiVals():
-    tbl = "testSchedule"
-    colsCond = ["id"]
-    valsCond = [1]
-    col = ["status","msg"]
-    val = ["pending","hi"]
 
-    dbConn.modMultiVals(tbl, colsCond, valsCond, col, val)
 
 
 def qstnToTestPath():
