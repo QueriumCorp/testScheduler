@@ -51,7 +51,8 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
 
     ### testing code
-    test.addTestPaths()
+    test.modTbl()
+    # test.addTestPaths()
     # test.testMySqlConnector()
     # test.getPathsInQstn()
     # test.getRow()

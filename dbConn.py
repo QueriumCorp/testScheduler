@@ -139,7 +139,7 @@ def getPathsInQstn(identifier, statuses, colsRtrn, fltr="", flat=True):
 
     sql = "SELECT {rtrn} FROM path WHERE {sqlStts} id IN ({sqlPath}) {fltr};".format(
         rtrn=rtrn, sqlStts=sqlStts, sqlPath=sqlPath, fltr=fltr)
-    # print(sql)
+    logging.debug(f"getPathsInQstn - sql: {sql}")
 
     rslt = exec(sql)
     return [item[0] for item in rslt] if flat else rslt
@@ -164,9 +164,49 @@ def addTestPaths(data):
     sqlVals = [i for row in data for i in [row[k] for k in keys]]
     sql = "INSERT INTO {tbl} ({sqlKeys}) VALUES {sqlPh}".format(
         tbl=tbl, sqlKeys=sqlKeys, sqlPh=sqlPh)
-    print(sql)
+    logging.debug(f"addTestPaths - sql: {sql}")
 
     exec(sql, cmd="commit", vals=tuple(sqlVals))
+
+#######################################
+# Update a table in the database
+# Parameters
+# tbl: name of a table
+# colsCond: a list of field names
+# valsCond: a list of field values
+# col: a field name to be changed
+# val: a new value of the field name
+# Example:
+# modTbl("testSchedule", ["id"], [1], "status", "pending")
+#######################################
+def modTbl(tbl, colsCond, valsCond, col, val):
+    sqlCond = "=%s AND ".join(colsCond)+"=%s "
+    sql = "UPDATE {tbl} SET {col}='{val}' WHERE {sqlCond};".format(
+        tbl=tbl, col=col, val=val, sqlCond=sqlCond)
+    logging.debug(f"modTbl - sql: {sql}")
+
+    exec(sql, cmd="commit", vals=tuple(valsCond))
+
+
+# def modMultiVals(tbl, colsCond, valsCond, cols, vals):
+#     sqlSet = "=%s,".join(cols)+"=%s"
+#     sqlCond = "=%s AND ".join(colsCond)+"=%s "
+#     sql = f"UPDATE {tbl} SET {sqlSet} WHERE {sqlCond};"
+#     logging.debug(f"modTbl - sql: {sql}")
+
+#     conn = pymysql.connect(
+#         os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
+#         os.environ.get('DB_PASS'), os.environ.get('DB_NAME'),
+#         use_unicode=True, charset="utf8")
+#     try:
+#         with conn.cursor() as cursor:
+#             cursor.execute(sql, tuple(vals+valsCond))
+#             conn.commit()
+#     except pymysql.Error:
+#         raise Exception("Error in pymysql")
+#     finally:
+#         conn.close()
+
 
 #######################################
 # Fetch all in a sql query
@@ -206,47 +246,6 @@ def addTestPaths(data):
 #     try:
 #         with conn.cursor() as cursor:
 #             cursor.execute(sql, vals)
-#             conn.commit()
-#     except pymysql.Error:
-#         raise Exception("Error in pymysql")
-#     finally:
-#         conn.close()
-
-#######################################
-# Update a table in the database
-# parameters:
-#######################################
-# def modTbl(tbl, colsCond, valsCond, col, val):
-#     sqlCond = "=%s AND ".join(colsCond)+"=%s "
-#     sql = f"UPDATE {tbl} SET {col}='{val}' WHERE {sqlCond};"
-#     logging.debug(f"modTbl - sql: {sql}")
-
-#     conn = pymysql.connect(
-#         os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
-#         os.environ.get('DB_PASS'), os.environ.get('DB_NAME'),
-#         use_unicode=True, charset="utf8")
-#     try:
-#         with conn.cursor() as cursor:
-#             cursor.execute(sql, tuple(valsCond))
-#             conn.commit()
-#     except pymysql.Error:
-#         raise Exception("Error in pymysql")
-#     finally:
-#         conn.close()
-
-# def modMultiVals(tbl, colsCond, valsCond, cols, vals):
-#     sqlSet = "=%s,".join(cols)+"=%s"
-#     sqlCond = "=%s AND ".join(colsCond)+"=%s "
-#     sql = f"UPDATE {tbl} SET {sqlSet} WHERE {sqlCond};"
-#     logging.debug(f"modTbl - sql: {sql}")
-
-#     conn = pymysql.connect(
-#         os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
-#         os.environ.get('DB_PASS'), os.environ.get('DB_NAME'),
-#         use_unicode=True, charset="utf8")
-#     try:
-#         with conn.cursor() as cursor:
-#             cursor.execute(sql, tuple(vals+valsCond))
 #             conn.commit()
 #     except pymysql.Error:
 #         raise Exception("Error in pymysql")

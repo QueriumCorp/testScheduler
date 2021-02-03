@@ -20,6 +20,17 @@ import task
 import mysql.connector
 from mysql.connector import errorcode
 
+def modTbl():
+    tbl = "testSchedule"
+    colsCond = ["id"]
+    valsCond = [1]
+    # col = "skipStatuses"
+    # val = '["invalid"]'
+    col = "status"
+    val = 'pending'
+
+    dbConn.modTbl(tbl, colsCond, valsCond, col, val)
+
 def addTestPaths():
     data = [{"name": "test", "author": "eb"}]
     dbConn.addTestPaths(data)
@@ -86,16 +97,6 @@ def modMultiVals2():
 
     dbConn.modMultiVals(tbl, colsCond, valsCond, col, val)
 
-def modTbl():
-    tbl = "testSchedule"
-    colsCond = ["id"]
-    valsCond = [1]
-    # col = "skipStatuses"
-    # val = '["invalid"]'
-    col = "status"
-    val = 'pending'
-
-    dbConn.modTbl(tbl, colsCond, valsCond, col, val)
 
 def modMultiVals():
     tbl = "testSchedule"
