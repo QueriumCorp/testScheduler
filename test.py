@@ -16,6 +16,46 @@ from datetime import datetime
 import json
 import repo
 import task
+# import MySQLdb
+import mysql.connector
+from mysql.connector import errorcode
+
+def addTestPaths():
+    data = [{"name": "test", "author": "eb"}]
+    dbConn.addTestPaths(data)
+
+def getPathsInQstn():
+    rslt = dbConn.getPathsInQstn("QUES-12889", [], ["id", "status"])
+    # rslt = dbConn.getPathsInQstn(58418, [], ["id", "status"])
+    print("getPathsInQstn:", rslt)
+
+
+def testMySqlConnector():
+    # query = ("SELECT id FROM question WHERE unq=%s")
+    query = ("SELECT id FROM question WHERE unq=%s")
+    value = ("QUES-12889",)
+    rslt = ""
+    try:
+        cnx = mysql.connector.connect(user='webappuser', password='CU9%&yBd^knWX^UL', host='67.205.165.116',database='udb')
+        with cnx.cursor() as cursor:
+            cursor.execute(query, value)
+            rslt = cursor.fetchone()
+            # print("fetchone-rslt:", rslt)
+        print("rslt:", rslt)
+
+    except mysql.connector.Error as err:
+      if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+        print("Something is wrong with your user name or password")
+      elif err.errno == errorcode.ER_BAD_DB_ERROR:
+        print("Database does not exist")
+      else:
+        print(err)
+    finally:
+      cnx.close()
+
+
+
+
 
 def taskTest():
     aTask = task.next()
@@ -99,8 +139,8 @@ def scheduleTask():
 
 def getRow():
     print ("test - getRow")
-    # tmp = dbConn.getRow("testSchedule", ["id"], [1], ["*"])
-    tmp = dbConn.getRow("question", ["unq"], ["QUES-12879"], ["id"])
+    tmp = dbConn.getRow("testSchedule", ["id"], [1], ["id", "author"])
+    # tmp = dbConn.getRow("question", ["unq"], ["QUES-12879"], ["id"])
     print (tmp)
 
 def mkFilter():
