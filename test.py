@@ -20,9 +20,9 @@ import mysql.connector
 from mysql.connector import errorcode
 
 def fetchallQuery():
-    sql = "select * from testPath;"
-    vals = []
-    fldsRtrn = ["id","name"]
+    sql = "select id,name,author,question_id from testPath;"
+    vals = ()
+    fldsRtrn = ["id","name","author","question_id"]
     mkObjQ = True
     rslt = dbConn.fetchallQuery(sql, vals, fldsRtrn, mkObjQ)
     print("test.fetchallQuery:", rslt)

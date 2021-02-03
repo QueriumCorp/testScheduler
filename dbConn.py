@@ -203,12 +203,14 @@ def modMultiVals(tbl, colsCond, valsCond, cols, vals):
 # sql: sql query string
 # vals: any values for the place holders in the query string
 # fldsRtrn: a list of fields to be return
-# mkObjQ: True - turn the query result into an object
+# mkObjQ: True/False - turn the query result into an object. If mkObjQ is True,
+#         make sure SELECT fields are the same as fldsRtrn values
 # Example
 # fetchallQuery("SELECT * FROM testPath;", [], fldsRtrn=["id","name"], mkObjQ=True)
 #######################################
 def fetchallQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
-    result = exec(sql, cmd="fetchall", vals=tuple(vals))
+    valTuple = tuple(vals) if not isinstance(vals, tuple) else vals
+    result = exec(sql, cmd="fetchall", vals=valTuple)
 
     if mkObjQ:
         return mkObjs(fldsRtrn, result)
@@ -219,16 +221,6 @@ def fetchallQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
 # Run a sql query
 # parameters:
 #######################################
-# def execQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
-#     conn = pymysql.connect(
-#         os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
-#         os.environ.get('DB_PASS'), os.environ.get('DB_NAME'),
-#         use_unicode=True, charset="utf8")
-#     try:
-#         with conn.cursor() as cursor:
-#             cursor.execute(sql, vals)
-#             conn.commit()
-#     except pymysql.Error:
-#         raise Exception("Error in pymysql")
-#     finally:
-#         conn.close()
+def execQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
+    valTuple = tuple(vals) if not isinstance(vals, tuple) else vals
+    exec(sql, vals=valTuple, cmd="commit")
