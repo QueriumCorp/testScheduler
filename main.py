@@ -10,6 +10,7 @@
 # python3 -m pip install python-dotenv
 # python3 -m pip install requests
 
+
 # To run
 # python3 main.py '{"summary":"OSCAGc07s01*", "labels": ["CSULAWeek01"], "qstnType":"StepWise", "fields":["key"]}'
 # or
@@ -50,13 +51,19 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
 
     ### testing code
+    # test.fetchallQuery()
+    # test.modMultiVals()
+    # test.modTbl()
+    # test.addTestPaths()
+    # test.testMySqlConnector()
+    # test.getPathsInQstn()
+    # test.getRow()
     # test.taskTest()
     # test.repoTest()
     # test.modTbl()
     # test.modMultiVals2()
     # test.modMultiVals()
     # test.qstnToTestPath()
-    # test.getRow()
     # test.scheduleTask()
     # test.rmExistingPaths()
     # sys.exit()

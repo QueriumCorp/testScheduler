@@ -16,6 +16,74 @@ from datetime import datetime
 import json
 import repo
 import task
+import mysql.connector
+from mysql.connector import errorcode
+
+def fetchallQuery():
+    sql = "select id,name,author,question_id from testPath;"
+    vals = ()
+    fldsRtrn = ["id","name","author","question_id"]
+    mkObjQ = True
+    rslt = dbConn.fetchallQuery(sql, vals, fldsRtrn, mkObjQ)
+    print("test.fetchallQuery:", rslt)
+
+
+def modMultiVals():
+    tbl = "testSchedule"
+    colsCond = ["id"]
+    valsCond = [1]
+    col = ["status","msg"]
+    val = ["pending","hi"]
+
+    dbConn.modMultiVals(tbl, colsCond, valsCond, col, val)
+
+def modTbl():
+    tbl = "testSchedule"
+    colsCond = ["id"]
+    valsCond = [1]
+    # col = "skipStatuses"
+    # val = '["invalid"]'
+    col = "status"
+    val = 'pending'
+
+    dbConn.modTbl(tbl, colsCond, valsCond, col, val)
+
+def addTestPaths():
+    data = [{"name": "test", "author": "eb"}]
+    dbConn.addTestPaths(data)
+
+def getPathsInQstn():
+    rslt = dbConn.getPathsInQstn("QUES-12889", [], ["id", "status"])
+    # rslt = dbConn.getPathsInQstn(58418, [], ["id", "status"])
+    print("getPathsInQstn:", rslt)
+
+
+def testMySqlConnector():
+    # query = ("SELECT id FROM question WHERE unq=%s")
+    query = ("SELECT id FROM question WHERE unq=%s")
+    value = ("QUES-12889",)
+    rslt = ""
+    try:
+        cnx = mysql.connector.connect(user='webappuser', password='CU9%&yBd^knWX^UL', host='67.205.165.116',database='udb')
+        with cnx.cursor() as cursor:
+            cursor.execute(query, value)
+            rslt = cursor.fetchone()
+            # print("fetchone-rslt:", rslt)
+        print("rslt:", rslt)
+
+    except mysql.connector.Error as err:
+      if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+        print("Something is wrong with your user name or password")
+      elif err.errno == errorcode.ER_BAD_DB_ERROR:
+        print("Database does not exist")
+      else:
+        print(err)
+    finally:
+      cnx.close()
+
+
+
+
 
 def taskTest():
     aTask = task.next()
@@ -46,25 +114,8 @@ def modMultiVals2():
 
     dbConn.modMultiVals(tbl, colsCond, valsCond, col, val)
 
-def modTbl():
-    tbl = "testSchedule"
-    colsCond = ["id"]
-    valsCond = [1]
-    # col = "skipStatuses"
-    # val = '["invalid"]'
-    col = "status"
-    val = 'pending'
 
-    dbConn.modTbl(tbl, colsCond, valsCond, col, val)
 
-def modMultiVals():
-    tbl = "testSchedule"
-    colsCond = ["id"]
-    valsCond = [1]
-    col = ["status","msg"]
-    val = ["pending","hi"]
-
-    dbConn.modMultiVals(tbl, colsCond, valsCond, col, val)
 
 
 def qstnToTestPath():
@@ -99,8 +150,8 @@ def scheduleTask():
 
 def getRow():
     print ("test - getRow")
-    # tmp = dbConn.getRow("testSchedule", ["id"], [1], ["*"])
-    tmp = dbConn.getRow("question", ["unq"], ["QUES-12879"], ["id"])
+    tmp = dbConn.getRow("testSchedule", ["id"], [1], ["id", "author"])
+    # tmp = dbConn.getRow("question", ["unq"], ["QUES-12879"], ["id"])
     print (tmp)
 
 def mkFilter():
