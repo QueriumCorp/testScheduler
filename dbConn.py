@@ -199,29 +199,21 @@ def modMultiVals(tbl, colsCond, valsCond, cols, vals):
 
 #######################################
 # Fetch all in a sql query
-# parameters:
+# Parameters
+# sql: sql query string
+# vals: any values for the place holders in the query string
+# fldsRtrn: a list of fields to be return
+# mkObjQ: True - turn the query result into an object
+# Example
+# fetchallQuery("SELECT * FROM testPath;", [], fldsRtrn=["id","name"], mkObjQ=True)
 #######################################
-# def fetchallQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
-#     # print("sql", sql)
-#     # print("vals", vals)
-#     conn = pymysql.connect(
-#         os.environ.get('DB_HOST'), os.environ.get('DB_USER'),
-#         os.environ.get('DB_PASS'), os.environ.get('DB_NAME'),
-#         use_unicode=True, charset="utf8")
-#     try:
-#         with conn.cursor() as cursor:
-#             cursor.execute(sql, vals)
-#             result = cursor.fetchall()
-#             # print("result", result)
-#     except pymysql.Error:
-#         raise Exception("Error in pymysql")
-#     finally:
-#         conn.close()
+def fetchallQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
+    result = exec(sql, cmd="fetchall", vals=tuple(vals))
 
-#     if mkObjQ:
-#         return mkObjs(fldsRtrn, result)
+    if mkObjQ:
+        return mkObjs(fldsRtrn, result)
 
-#     return result
+    return result
 
 #######################################
 # Run a sql query

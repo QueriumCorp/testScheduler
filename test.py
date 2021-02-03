@@ -19,6 +19,15 @@ import task
 import mysql.connector
 from mysql.connector import errorcode
 
+def fetchallQuery():
+    sql = "select * from testPath;"
+    vals = []
+    fldsRtrn = ["id","name"]
+    mkObjQ = True
+    rslt = dbConn.fetchallQuery(sql, vals, fldsRtrn, mkObjQ)
+    print("test.fetchallQuery:", rslt)
+
+
 def modMultiVals():
     tbl = "testSchedule"
     colsCond = ["id"]
