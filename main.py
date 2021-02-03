@@ -51,7 +51,7 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
 
     ### testing code
-    test.fetchallQuery()
+    # test.fetchallQuery()
     # test.modMultiVals()
     # test.modTbl()
     # test.addTestPaths()
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # test.qstnToTestPath()
     # test.scheduleTask()
     # test.rmExistingPaths()
-    sys.exit()
+    # sys.exit()
 
     ### Get next task
     terminateQ = False
