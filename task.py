@@ -28,6 +28,6 @@ def next():
         return []
 
     ### Convert the data into an object
-    rsltObj = dbConn.mkObj(dbConn.getFields("testSchedule"), data)
+    rsltObj = dbConn.mkObj(dbConn.getFields("testSchedule"), data[0])
 
     return rsltObj
