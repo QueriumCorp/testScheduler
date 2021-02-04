@@ -60,7 +60,7 @@ def filterExistsQ(name):
 
         rsltPart = json.loads(response.text)
         for val in rsltPart["values"]:
-            logging.debug(f"name: {val['name']}")
+            logging.debug("name: {val}".format(val=val['name']))
             if val["name"] == name:
                 return True
 
@@ -154,5 +154,5 @@ def mkFilter(name, jql, settings={}):
         }
 
     ## Create a Jira filter
-    logging.info(f"Created a new filter in Jira {name}")
+    logging.info("Created a new filter in Jira {name}".format(name=name))
     return(mkJiraFilter(name, jql, settings))

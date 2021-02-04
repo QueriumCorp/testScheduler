@@ -139,7 +139,7 @@ def getPathsInQstn(identifier, statuses, colsRtrn, fltr="", flat=True):
 
     sql = "SELECT {rtrn} FROM path WHERE {sqlStts} id IN ({sqlPath}) {fltr};".format(
         rtrn=rtrn, sqlStts=sqlStts, sqlPath=sqlPath, fltr=fltr)
-    logging.debug(f"getPathsInQstn - sql: {sql}")
+    logging.debug("getPathsInQstn - sql: {sql}".format(sql=sql))
 
     rslt = exec(sql)
     return [item[0] for item in rslt] if flat else rslt
@@ -164,7 +164,7 @@ def addTestPaths(data):
     sqlVals = [i for row in data for i in [row[k] for k in keys]]
     sql = "INSERT INTO {tbl} ({sqlKeys}) VALUES {sqlPh}".format(
         tbl=tbl, sqlKeys=sqlKeys, sqlPh=sqlPh)
-    logging.debug(f"addTestPaths - sql: {sql}")
+    logging.debug("addTestPaths - sql: {sql}".format(sql=sql))
 
     exec(sql, cmd="commit", vals=tuple(sqlVals))
 
@@ -183,7 +183,7 @@ def modTbl(tbl, colsCond, valsCond, col, val):
     sqlCond = "=%s AND ".join(colsCond)+"=%s "
     sql = "UPDATE {tbl} SET {col}='{val}' WHERE {sqlCond};".format(
         tbl=tbl, col=col, val=val, sqlCond=sqlCond)
-    logging.debug(f"modTbl - sql: {sql}")
+    logging.debug("modTbl - sql: {sql}".format(sql=sql))
 
     exec(sql, cmd="commit", vals=tuple(valsCond))
 
@@ -192,7 +192,7 @@ def modMultiVals(tbl, colsCond, valsCond, cols, vals):
     sqlCond = "=%s AND ".join(colsCond)+"=%s "
     sql = "UPDATE {tbl} SET {sqlSet} WHERE {sqlCond};".format(
         tbl=tbl, sqlSet=sqlSet, sqlCond=sqlCond)
-    logging.debug(f"modTbl - sql: {sql}")
+    logging.debug("modTbl - sql: {sql}".format(sql=sql))
 
     exec(sql, cmd="commit", vals=tuple(vals + valsCond))
 
