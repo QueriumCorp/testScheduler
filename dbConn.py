@@ -104,10 +104,12 @@ def exec(query, cmd="fetchall", vals=tuple()):
 # colsRtrn: a list of fields to be returned
 # [fltr]: additional query attributes
 #######################################
-def getRow(tbl, cols, vals, colsRtrn, fltr=""):
+def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1"):
     sqlRtrn = ",".join(colsRtrn)
-    sqlCond = "=%s AND ".join(cols)+"=%s "
-    sql = "SELECT "+sqlRtrn+" FROM "+tbl+" WHERE "+sqlCond+fltr
+    sqlCond = "=%s AND ".join(cols) + "=%s "
+    sql = "SELECT {flds} FROM {tbl} WHERE {cond} {fltr};".format(
+        flds=sqlRtrn, tbl=tbl, cond=sqlCond, fltr=fltr)
+    logging.debug("getRow-sql: {}".format(sql))
 
     rslt = exec(sql, vals=tuple(vals))
     return rslt
@@ -186,6 +188,7 @@ def modTbl(tbl, colsCond, valsCond, col, val):
     logging.debug("modTbl - sql: {sql}".format(sql=sql))
 
     exec(sql, cmd="commit", vals=tuple(valsCond))
+
 
 def modMultiVals(tbl, colsCond, valsCond, cols, vals):
     sqlSet = "=%s,".join(cols)+"=%s"
