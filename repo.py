@@ -18,7 +18,7 @@ import logging
 def mkDir(dir):
     if not os.path.isdir(dir):
         os.mkdir(dir)
-        logging.info(f"Created a directory: {dir}")
+        logging.info("Created a directory: {dir}".format(dir=dir))
 
     return dir
 
@@ -56,6 +56,6 @@ def getGitHash(aBranch):
             remote.fetch()
         theRepo.git.checkout(aBranch)
         theRepo.git.pull()
-        logging.debug(f"Pulled the latest code on {aBranch}")
+        logging.debug("Pulled the latest code on {aBranch}".format(aBranch=aBranch))
 
     return theRepo.active_branch.commit.hexsha

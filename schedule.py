@@ -31,10 +31,10 @@ def jiraSearch(req):
                 "keys": searchFilter["issueSearch"]["result"]
             }
         else:
-            logging.warning(f"Invalid filter {req['useFilter']}")
+            logging.warning("Invalid filter {}".format(req['useFilter']))
             result = {
                 "status": False,
-                "result": f"Invalid filter {req['useFilter']}"
+                "result": "Invalid filter {}".format(req['useFilter'])
             }
     else:
         logging.info("Jira search is based on a jql")
@@ -103,8 +103,8 @@ def defaultSettings(purpose, settings):
 #######################################
 def mkQueryUpdate(tbl, idLen, stts="pending"):
     sqlPh = ",".join(["%s"]*idLen)
-    sqlUpdate = f"UPDATE {tbl} SET status='{stts}' WHERE id IN ({sqlPh})"
-    logging.debug(f"mkQueryUpdate - query: {sqlUpdate}")
+    sqlUpdate = "UPDATE {tbl} SET status='{stts}' WHERE id IN ({sqlPh})".format(tbl=tbl,stts=stts,sqlPh=sqlPh)
+    logging.debug("mkQueryUpdate - query: {}".format(sqlUpdate))
     return sqlUpdate
 
 #######################################
@@ -141,7 +141,7 @@ def rmExistingPaths(keysCond, data):
     sqlRtrn = ",".join(getFlds)
     sqlCond = (") OR (".join(["=%s AND ".join(keysCond)+"=%s"]*len(data)))
     sqlCond = "("+sqlCond+")"
-    sql = f"SELECT {sqlRtrn} FROM {tbl} WHERE {sqlCond}"
+    sql = "SELECT {sqlRtrn} FROM {tbl} WHERE {sqlCond}".format(sqlRtrn=sqlRtrn, tbl=tbl, sqlCond=sqlCond)
 
     ### Make values to test
     sqlVals = [ i for row in data for i in [row[k] for k in keysCond] ]
@@ -158,12 +158,12 @@ def rmExistingPaths(keysCond, data):
         idsComp = list(map(lambda x: x["id"], completed))
         dbConn.execQuery(mkQueryUpdate(tbl, len(idsComp)), idsComp)
         logging.info(
-            f"Changed the status from completed to pending: {len(completed)}")
+            "Changed the status from completed to pending: {}".format(len(completed)))
 
     ### Get the ones already in pending
     pending = list(filter(lambda x: x["status"]=="pending", onesInDb))
     logging.info(
-            f"Test paths that are already pending: {len(pending)}")
+            "Test paths that are already pending: {}".format(len(pending)))
 
     ### Remove the paths that are already in testPath because their status
     ### changed to pending
@@ -185,18 +185,18 @@ def rmExistingPaths(keysCond, data):
 # result: a number of test paths in a question added in testPath
 #######################################
 def qstnToTestPath(info, settings):
-    logging.info(f"Scheduling paths in {info['key']}")
+    logging.info("Scheduling paths in {}".format(info['key']))
     ### Get question_id of a question unq
     qstnId = dbConn.getRow("question", ["unq"], [info["key"]], ["id"])
     if qstnId is None or len(qstnId)<1:
         return {
             "status": False,
-            "result": f"{info['key']} was not found in UDB"
+            "result": "{} was not found in UDB".format(info['key'])
         }
     if len(qstnId)>1:
         return {
             "status": False,
-            "result": f"Multiple rows have the same {info['key']}: {qstnId}"
+            "result": "Multiple rows have the same {info}: {qstnId}".format(info=info['key'], qstnId=qstnId)
         }
 
     ### Get paths in a question
@@ -206,7 +206,7 @@ def qstnToTestPath(info, settings):
         json.loads(settings["skipStatuses"]),
         ["id"]
     )
-    logging.info(f"Number of paths in UDB: {len(paths)}")
+    logging.info("Number of paths in UDB: {}".format(len(paths)))
     if len(paths)<1:
         return {
             "status": True,
@@ -216,7 +216,7 @@ def qstnToTestPath(info, settings):
     ### If [paths] > limitPaths, sample the paths
     if "limitPaths" in settings and settings["limitPaths"]!=-1:
         if len(paths)>settings["limitPaths"]:
-            logging.info(f"Sampled the paths to {settings['limitPaths']}")
+            logging.info("Sampled the paths to {}".format(settings['limitPaths']))
             paths = random.sample(paths, settings["limitPaths"])
 
     ### Make dictionary of rows for the testPath table
@@ -232,10 +232,10 @@ def qstnToTestPath(info, settings):
 
     ### Add the test paths in the testPath table
     if len(newPaths)>0:
-        logging.info(f"New test paths: {len(newPaths)}")
+        logging.info("New test paths: {}".format(len(newPaths)))
         dbConn.addTestPaths(newPaths)
     else:
-        logging.info(f"No new test paths to schedule")
+        logging.info("No new test paths to schedule")
 
     return {
         "status": True,
@@ -253,7 +253,7 @@ def qstnsToTestPath(qstns, settings):
         logging.info("No question to test")
         return {"status": True, "result": 0}
 
-    logging.info (f"Jira Questions: {len(qstns['keys'])}")
+    logging.info ("Jira Questions: {}".format(len(qstns['keys'])))
     result = []
     debugCnt = 0
     for qstnInfo in qstns["keys"]:
@@ -283,7 +283,7 @@ def task(scheduleData):
 
     ### Search request
     req = json.loads(scheduleData["jira"])
-    logging.debug(f"Jira request: {req}")
+    logging.debug("Jira request: {}".format(req))
 
     ### Jira respond of the request
     jiraData = jiraSearch(req)
@@ -295,7 +295,7 @@ def task(scheduleData):
             ["id"], scheduleData["id"],
             ["status", "finished", "msg"],
             ["Failed", datetime.now(), jiraData["result"]])
-        logging.info(f"Failed on jiraSearch: {jiraData['result']}")
+        logging.info("Failed on jiraSearch: {}".format(jiraData['result']))
         return jiraData
 
     ### Update testSchedue with the jira result
@@ -313,7 +313,7 @@ def task(scheduleData):
                 ["id"], scheduleData["id"],
                 ["status", "finished", "msg"],
                 ["Failed", datetime.now(), fltrRslt["result"]])
-            logging.info(f"Unable to create a Jira filter: {req['makeFilter']}")
+            logging.info("Unable to create a Jira filter: {}".format(req['makeFilter']))
             return fltrRslt
 
     ### Add questions in testPath
@@ -322,7 +322,7 @@ def task(scheduleData):
     ### Report failed questions
     failedQstns = list(filter(lambda x: x["status"]==False, rsltQstns))
     if len(failedQstns)>0:
-        logging.warning(f"Failed on adding questions: {failedQstns}")
+        logging.warning("Failed on adding questions: {}".format(failedQstns))
     dbConn.modMultiVals(
         tbl,
         ["id"], [scheduleData["id"]],
