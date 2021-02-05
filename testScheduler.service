@@ -1,0 +1,12 @@
+[Unit]
+Description=Systemd service that schedules test-paths based on a test-schedule.
+
+[Service]
+Type=simple
+User=webappuser
+Environment="DISPLAY=:1"
+ExecStart=/bin/python3 /usr/local/bin/testScheduler
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
