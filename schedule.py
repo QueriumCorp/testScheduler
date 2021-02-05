@@ -179,7 +179,7 @@ def rmExistingPaths(keysCond, data):
     return result
 
 #######################################
-# Add paths in a question to testPath
+# Add question paths to testPath
 # Return:
 # status: True/False
 # result: a number of test paths in a question added in testPath
@@ -187,9 +187,8 @@ def rmExistingPaths(keysCond, data):
 def qstnToTestPath(info, settings):
     logging.info("Scheduling paths in {}".format(info['key']))
     ### Get question_id of a question unq
-    qstnId = dbConn.getRow("question", ["unq"], [info["key"]], ["id"])[0]
-    # logging.debug("qstnToTestPath-qstnId {}".format(qstnId))
-    # logging.debug("qstnToTestPath-qstnId-len {}".format(len(qstnId)))
+    qstnId = dbConn.getRow("question", ["unq"], [info["key"]], ["id"], fltr="")
+
     if qstnId is None or len(qstnId)<1:
         return {
             "status": False,
@@ -203,6 +202,7 @@ def qstnToTestPath(info, settings):
 
     ### Get paths in a question
     # print (settings["skipStatuses"])
+    qstnId = qstnId[0]
     paths = dbConn.getPathsInQstn(
         qstnId[0],
         json.loads(settings["skipStatuses"]),
@@ -257,14 +257,10 @@ def qstnsToTestPath(qstns, settings):
 
     logging.info ("Jira Questions: {}".format(len(qstns['keys'])))
     result = []
-    debugCnt = 0
     for qstnInfo in qstns["keys"]:
         rsltQstn = qstnToTestPath(qstnInfo, settings)
         rsltQstn["unq"] = qstnInfo['key']
         result.append(rsltQstn)
-        if debugCnt > 2:
-            break
-        debugCnt += 1
 
     return result
 
@@ -273,9 +269,6 @@ def qstnsToTestPath(qstns, settings):
 # Main logic
 ###############################################################################
 def task(scheduleData):
-    # print("scheduleData")
-    # print(scheduleData)
-
     tbl = "testSchedule"
 
     ### Change the task's status to running and started time
@@ -315,7 +308,8 @@ def task(scheduleData):
                 ["id"], scheduleData["id"],
                 ["status", "finished", "msg"],
                 ["Failed", datetime.now(), fltrRslt["result"]])
-            logging.info("Unable to create a Jira filter: {}".format(req['makeFilter']))
+            logging.info("Unable to create a Jira filter: {}".format(
+                req['makeFilter']))
             return fltrRslt
 
     ### Add questions in testPath
