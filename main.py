@@ -35,7 +35,7 @@ import task
 import schedule
 import repo
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 ###############################################################################
 # Support functions
@@ -51,6 +51,7 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
 
     ### testing code
+    # test.getRow()
     # test.taskTest()
     # test.fetchallQuery()
     # test.modMultiVals()
@@ -58,7 +59,6 @@ if __name__ == '__main__':
     # test.addTestPaths()
     # test.testMySqlConnector()
     # test.getPathsInQstn()
-    # test.getRow()
 
     # test.repoTest()
     # test.modTbl()

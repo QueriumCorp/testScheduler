@@ -145,10 +145,15 @@ def scheduleTask():
     schedule.task(data)
 
 def getRow():
-    print ("test - getRow")
-    tmp = dbConn.getRow("testSchedule", ["id"], [1], ["id", "author"])
+    print("test - getRow")
+    tmp = dbConn.getRow("testPath", ["status"], ["pending"], ["id"], fltr="")
+    # tmp = dbConn.getRow("question", ["unq"], ["QUES-12880"], ["id"])
     # tmp = dbConn.getRow("question", ["unq"], ["QUES-12879"], ["id"])
-    print (tmp)
+    print("len:", len(tmp))
+
+    # tmp = dbConn.getRow("testSchedule", ["id"], [1], ["id", "author"])
+    # tmp = dbConn.getRow("question", ["unq"], ["QUES-12879"], ["id"])
+    # print (tmp)
 
 def mkFilter():
     print ("test - mkFilter")
