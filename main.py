@@ -51,6 +51,7 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
 
     ### testing code
+    # test.taskTest()
     # test.fetchallQuery()
     # test.modMultiVals()
     # test.modTbl()
@@ -58,7 +59,7 @@ if __name__ == '__main__':
     # test.testMySqlConnector()
     # test.getPathsInQstn()
     # test.getRow()
-    # test.taskTest()
+
     # test.repoTest()
     # test.modTbl()
     # test.modMultiVals2()

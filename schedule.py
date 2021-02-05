@@ -187,7 +187,9 @@ def rmExistingPaths(keysCond, data):
 def qstnToTestPath(info, settings):
     logging.info("Scheduling paths in {}".format(info['key']))
     ### Get question_id of a question unq
-    qstnId = dbConn.getRow("question", ["unq"], [info["key"]], ["id"])
+    qstnId = dbConn.getRow("question", ["unq"], [info["key"]], ["id"])[0]
+    # logging.debug("qstnToTestPath-qstnId {}".format(qstnId))
+    # logging.debug("qstnToTestPath-qstnId-len {}".format(len(qstnId)))
     if qstnId is None or len(qstnId)<1:
         return {
             "status": False,
