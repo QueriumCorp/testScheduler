@@ -81,10 +81,6 @@ def testMySqlConnector():
     finally:
       cnx.close()
 
-
-
-
-
 def taskTest():
     aTask = task.next()
     print("before: {aTask}".format(aTask=aTask))

@@ -166,7 +166,7 @@ def addTestPaths(data):
     sqlVals = [i for row in data for i in [row[k] for k in keys]]
     sql = "INSERT INTO {tbl} ({sqlKeys}) VALUES {sqlPh}".format(
         tbl=tbl, sqlKeys=sqlKeys, sqlPh=sqlPh)
-    logging.debug("addTestPaths - sql: {sql}".format(sql=sql))
+    # logging.debug("addTestPaths - sql: {sql}".format(sql=sql))
 
     exec(sql, cmd="commit", vals=tuple(sqlVals))
 
