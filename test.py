@@ -53,7 +53,7 @@ def addTestPaths():
     dbConn.addTestPaths(data)
 
 def getPathsInQstn():
-    rslt = dbConn.getPathsInQstn("QUES-12889", [], ["id", "status"])
+    rslt = dbConn.getPathsInQstn("QUES-12889", [], ["id", "priority"], flat=False)
     # rslt = dbConn.getPathsInQstn(58418, [], ["id", "status"])
     print("getPathsInQstn:", rslt)
 
