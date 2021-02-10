@@ -203,10 +203,12 @@ def qstnToTestPath(info, settings):
     ### Get paths in a question
     # print (settings["skipStatuses"])
     qstnId = qstnId[0]
+    pathFlds = ["id", "priority"]
     paths = dbConn.getPathsInQstn(
         qstnId[0],
         json.loads(settings["skipStatuses"]),
-        ["id"]
+        pathFlds,
+        flat=False
     )
     logging.info("Number of paths in UDB: {}".format(len(paths)))
     if len(paths)<1:
@@ -224,8 +226,13 @@ def qstnToTestPath(info, settings):
     ### Make dictionary of rows for the testPath table
     pathSttngs = []
     settings["question_id"] = qstnId[0]
-    for pathId in paths:
-        settings["path_id"] = pathId
+    for path in paths:
+        settings["path_id"] = path[0]
+        #### Inherit the priority field from path to testPath
+        if "priority" in pathFlds:
+            idx = pathFlds.index('priority')
+            settings["priority"] = path[idx]
+
         pathSttngs.append(defaultSettings("testPath", settings))
 
     ### Remove the test paths that are already in testPath
@@ -257,7 +264,11 @@ def qstnsToTestPath(qstns, settings):
 
     logging.info ("Jira Questions: {}".format(len(qstns['keys'])))
     result = []
+    testCnt = 1
     for qstnInfo in qstns["keys"]:
+        if testCnt > 3:
+            break
+        testCnt += 1
         rsltQstn = qstnToTestPath(qstnInfo, settings)
         rsltQstn["unq"] = qstnInfo['key']
         result.append(rsltQstn)
