@@ -51,6 +51,7 @@ logging.basicConfig(level=logging.INFO)
 if __name__ == '__main__':
 
     ### testing code
+    # test.defaultSettings()
     # test.getRow()
     # test.taskTest()
     # test.fetchallQuery()
