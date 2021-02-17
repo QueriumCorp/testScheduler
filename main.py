@@ -34,6 +34,7 @@ import logging
 import task
 import schedule
 import repo
+import git
 
 logging.basicConfig(level=logging.INFO)
 
@@ -84,6 +85,12 @@ if __name__ == '__main__':
             else:
                 logging.info("No pending tasks: sleeping")
                 time.sleep(int(os.environ.get('sleepTime')))
+        except git.exc.GitCommandError as err:
+            msgErr = "Task id {id} has an invalid branch: {branch}".format(
+                id=aTask["id"], branch=aTask["gitBranch"])
+            logging.error(msgErr)
+            task.modStts(aTask["id"], "fail", msg=msgErr)
+
         except KeyboardInterrupt:
             ### Add cleanup code if needed
             terminateQ = True

@@ -7,6 +7,7 @@ load_dotenv()
 import git
 import os
 import logging
+import sys
 
 ###############################################################################
 # Support functions
@@ -41,21 +42,26 @@ def getGitHash(aBranch):
 
     ## Clone the remote repo locally if it doesn't already exist
     theRepo = None
-    if not os.path.isdir(os.path.join(dirRepo, ".git")):
-        logging.info("Cloning a repo .....")
-        theRepo = git.Repo.clone_from(
-            os.environ.get('repoUrl'),
-            dirRepo,
-            branch=aBranch
-        )
-        ## Validate the repo
-        assert theRepo.active_branch.name == aBranch
+    try:
+        if not os.path.isdir(os.path.join(dirRepo, ".git")):
+            logging.info("Cloning a repo .....")
+            theRepo = git.Repo.clone_from(
+                os.environ.get('repoUrl'),
+                dirRepo,
+                branch=aBranch
+            )
+            ## Validate the repo
+            assert theRepo.active_branch.name == aBranch
+        else:
+            theRepo = git.Repo(dirRepo)
+            for remote in theRepo.remotes:
+                remote.fetch()
+            theRepo.git.checkout(aBranch)
+            theRepo.git.pull()
+            logging.debug("Pulled the latest code on {aBranch}".format(aBranch=aBranch))
+    except git.exc.GitCommandError as err:
+        logging.error("repo-getGitHash: Invalid branch: {}".format(aBranch))
+        raise
     else:
-        theRepo = git.Repo(dirRepo)
-        for remote in theRepo.remotes:
-            remote.fetch()
-        theRepo.git.checkout(aBranch)
-        theRepo.git.pull()
-        logging.debug("Pulled the latest code on {aBranch}".format(aBranch=aBranch))
+        return theRepo.active_branch.commit.hexsha
 
-    return theRepo.active_branch.commit.hexsha
