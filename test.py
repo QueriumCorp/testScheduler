@@ -18,12 +18,31 @@ import jiraFilter
 import util
 from dotenv import load_dotenv
 load_dotenv()
+import gitdb
+
+def getGitHash():
+    aTask = {"gitBranch": "dev", "gitHash": "x"}
+    try:
+        repo.getGitHash(aTask)
+    except gitdb.exc.BadName as err:
+         print("test-getGitHash: Invalid gitHash: {}".format(
+             aTask["gitHash"]))
+
+def clearRefs():
+    repo.clearRefs()
+
+def validateBranchQ():
+    aTask = {"gitBranch": "tmp20210218_01", "gitHash": "3bda78e37a0d3447d67b311082ca224815b738bb"}
+
+    print("validateBranchQ - {branch}: {rslt}".format(
+        branch=aTask["gitBranch"], rslt=repo.validateBranchQ(aTask)
+    ))
 
 
 def defaultSettings():
     rslt = schedule.defaultSettings(
         "testPath", {"msg": "stale", "host": "eb"}, ["msg"])
-    print("rslt:", rslt)
+    print("rslt: {}".format(rslt))
 
 
 def fetchallQuery():
