@@ -47,13 +47,7 @@ logging.basicConfig(level=logging.DEBUG)
 #######################################
 #
 #######################################
-
-###############################################################################
-#   Main
-###############################################################################
-if __name__ == '__main__':
-
-    ### testing code
+def testing():
     # test.clearRefs()
     # test.getGitHash()
     # test.validateBranchQ()
@@ -74,7 +68,15 @@ if __name__ == '__main__':
     # test.qstnToTestPath()
     # test.scheduleTask()
     # test.rmExistingPaths()
-    # sys.exit()
+    sys.exit()
+
+###############################################################################
+#   Main
+###############################################################################
+if __name__ == '__main__':
+
+    ### testing components
+    # testing()
 
     ### Get next task
     terminateQ = False
