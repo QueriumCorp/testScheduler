@@ -37,8 +37,8 @@ import repo
 import git
 import gitdb
 
-logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 ###############################################################################
 # Support functions
