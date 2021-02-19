@@ -34,8 +34,11 @@ import logging
 import task
 import schedule
 import repo
+import git
+import gitdb
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.INFO)
 
 ###############################################################################
 # Support functions
@@ -51,6 +54,9 @@ logging.basicConfig(level=logging.INFO)
 if __name__ == '__main__':
 
     ### testing code
+    # test.clearRefs()
+    # test.getGitHash()
+    # test.validateBranchQ()
     # test.defaultSettings()
     # test.getRow()
     # test.taskTest()
@@ -75,15 +81,28 @@ if __name__ == '__main__':
     while not terminateQ:
         try:
             aTask = task.next()
-            if len(aTask)>0:
-                ## If the value of gitHash is 'latest', get the latest commit
-                ## hash from GitHub
-                if aTask["gitHash"].lower()=="latest" and "gitBranch" in aTask:
-                    aTask["gitHash"] = repo.getGitHash(aTask["gitBranch"])
-                schedule.task(aTask)
-            else:
+            if len(aTask) < 1:
                 logging.info("No pending tasks: sleeping")
                 time.sleep(int(os.environ.get('sleepTime')))
+                continue
+
+            ## Validate and checkout gitBranch and gitHash
+            aTask["gitHash"] = repo.getGitHash(aTask)
+
+        except git.exc.GitCommandError as err:
+            msgErr = "Task {id} has an invalid gitBranch: {branch}".format(
+                id=aTask["id"], branch=aTask["gitBranch"])
+            task.modStts(aTask["id"], "fail", msg="Invalid gitBranch")
+            logging.error(msgErr)
+        except gitdb.exc.BadName as err:
+            msgErr = "Task {id} has an invalid gitHash: {gitHash}".format(
+                id=aTask["id"], gitHash=aTask["gitHash"])
+            task.modStts(aTask["id"], "fail", msg="Invalid gitHash")
+            logging.error(msgErr)
+        except NameError as err:
+            logging.error(err)
         except KeyboardInterrupt:
             ### Add cleanup code if needed
             terminateQ = True
+        else:
+            schedule.task(aTask)
