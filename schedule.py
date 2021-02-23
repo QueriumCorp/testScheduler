@@ -77,7 +77,7 @@ def defaultSettings(purpose, settings, skip=[]):
             "status": "pending",
             "ref_id": -1,
             "priority": 1,
-            "limitPathTime": 3600,
+            "limitPathTime": 600,
             "pid": -1,
             "stepCount": -1,
             "stepsCompleted": -1,
