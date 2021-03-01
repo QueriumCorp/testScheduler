@@ -38,7 +38,10 @@ import git
 import gitdb
 
 # logging.basicConfig(level=logging.DEBUG)
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s, %(levelname)s: %(message)s')
 
 ###############################################################################
 # Support functions
