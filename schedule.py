@@ -268,7 +268,7 @@ def qstnsToTestPath(qstns, settings):
         logging.info("No question to test")
         return {"status": True, "result": 0}
 
-    logging.info("Jira Questions: {}".format(len(qstns['keys'])))
+    logging.info("Question count: {}".format(len(qstns['keys'])))
     result = []
     testCnt = 1
     for qstnInfo in qstns["keys"]:
