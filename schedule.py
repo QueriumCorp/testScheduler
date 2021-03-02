@@ -8,50 +8,13 @@ import json
 import logging
 import dbConn
 import jql
-import jiraFilter
+import jira
 from datetime import datetime
 import random
 
 ###############################################################################
 # Support functions
 ###############################################################################
-
-#######################################
-# Search Jira based on a JQL or a filter
-#######################################
-def jiraSearch(req):
-    # Search jira based on the req
-    if "useFilter" in req:
-        logging.info("Jira search is based on a filter")
-        searchFilter = jql.searchByFilter(req, flatten=True)
-        if len(searchFilter) > 0:
-            result = {
-                "status": True,
-                "filter": searchFilter["filter"],
-                "keys": searchFilter["issueSearch"]["result"]
-            }
-        else:
-            logging.warning("Invalid filter {}".format(req['useFilter']))
-            result = {
-                "status": False,
-                "result": "Invalid filter {}".format(req['useFilter'])
-            }
-    else:
-        logging.info("Jira search is based on a jql")
-        search = jql.issueSearch(req, flatten=True)
-        if search["status"]:
-            result = {
-                "status": True,
-                "keys": search["result"],
-                "jql": search["jql"]
-            }
-        else:
-            result = {
-                "status": False,
-                "result": search["result"]
-            }
-
-    return result
 
 #######################################
 # Make a name based on process ID and time
@@ -285,63 +248,37 @@ def qstnsToTestPath(qstns, settings):
 ###############################################################################
 # Main logic
 ###############################################################################
-def task(scheduleData):
+def task(aTask):
     tbl = "testSchedule"
 
-    # Change the task's status to running and started time
-    dbConn.modMultiVals(tbl, ["id"], [scheduleData["id"]],
-                        ["status", "started"], ["running", datetime.now()]
-                        )
-
-    # Search request
-    req = json.loads(scheduleData["jira"])
-    logging.debug("Jira request: {}".format(req))
-
-    # Jira respond of the request
-    jiraData = jiraSearch(req)
-
-    # If jira request fails, update testSchdule
-    if jiraData["status"] == False:
-        dbConn.modMultiVals(
-            tbl,
-            ["id"], scheduleData["id"],
-            ["status", "finished", "msg"],
-            ["Failed", datetime.now(), jiraData["result"]])
-        logging.info("Failed on jiraSearch: {}".format(jiraData['result']))
-        return jiraData
-
-    # Update testSchedue with the jira result
-    dbConn.modMultiVals(
-        tbl,
-        ["id"], [scheduleData["id"]],
-        ["jiraResp"], [json.dumps(jiraData["keys"], separators=(',', ':'))])
-
-    # Create a new jiraFilter based on the given jql
-    if "makeFilter" in req and "useFilter" not in req:
-        fltrRslt = jiraFilter.mkFilter(req["makeFilter"], jiraData["jql"])
-        if fltrRslt["status"] == False:
-            dbConn.modMultiVals(
-                tbl,
-                ["id"], scheduleData["id"],
-                ["status", "finished", "msg"],
-                ["Failed", datetime.now(), fltrRslt["result"]])
-            logging.info("Unable to create a Jira filter: {}".format(
-                req['makeFilter']))
-            return fltrRslt
+    # Add questions in testPath
+    jiraRslt = jira.process(aTask)
+    if jiraRslt["status"] == False:
+        return jiraRslt
 
     # Add questions in testPath
-    rsltQstns = qstnsToTestPath(jiraData, scheduleData)
+    rsltQstns = qstnsToTestPath(jiraRslt, aTask)
 
     # Report failed questions
     failedQstns = list(filter(lambda x: x["status"] == False, rsltQstns))
     if len(failedQstns) > 0:
         logging.warning("Failed on adding questions: {}".format(failedQstns))
-    dbConn.modMultiVals(
-        tbl,
-        ["id"], [scheduleData["id"]],
-        ["status", "finished", "msg"],
-        [
-            "success" if len(failedQstns) == 0 else "failedSome",
-            datetime.now(),
-            json.dumps(rsltQstns, separators=(',', ':'))
-        ])
+
+        dbConn.modMultiVals(
+            tbl,
+            ["id"], [aTask["id"]],
+            ["status", "finished", "msg"],
+            [
+                "success" if len(failedQstns) == 0 else "failedSome",
+                datetime.now(),
+                json.dumps(rsltQstns, separators=(',', ':'))
+            ])
+        return {
+            "status": False,
+            "result": "Failed to add paths in questions: {msg}".format(
+                msg=failedQstns
+            )}
+
+    return {
+        "status": True,
+        "result": "Completed successfully"}

@@ -22,6 +22,7 @@ import util
 from urllib.parse import urlencode
 from datetime import datetime
 import logging
+import dbConn
 
 ###############################################################################
 # Support functions
@@ -135,9 +136,44 @@ def mkJiraFilter(name, jqlStr, settings):
     return {"status": True, "result": rslt["id"]}
 
 
-###############################################################################
-# Main logic
-###############################################################################
+#######################################
+# Search Jira based on a JQL or a filter
+# parameters:
+# req: Jira Query Language
+#######################################
+def search(req):
+    # Search jira based on the req
+    if "useFilter" in req:
+        logging.info("Jira search is based on a filter")
+        searchFilter = jql.searchByFilter(req, flatten=True)
+        if len(searchFilter) > 0:
+            result = {
+                "status": True,
+                "filter": searchFilter["filter"],
+                "keys": searchFilter["issueSearch"]["result"]
+            }
+        else:
+            logging.error("Invalid filter: {}".format(req['useFilter']))
+            result = {
+                "status": False,
+                "result": "Invalid filter {}".format(req['useFilter'])
+            }
+    else:
+        logging.info("Jira search is based on a jql")
+        jqlRspns = jql.issueSearch(req, flatten=True)
+        if jqlRspns["status"]:
+            result = {
+                "status": True,
+                "keys": jqlRspns["result"],
+                "jql": jqlRspns["jql"]
+            }
+        else:
+            result = {
+                "status": False,
+                "result": jqlRspns["result"]
+            }
+
+    return result
 
 #######################################
 # mkFilter
@@ -156,3 +192,55 @@ def mkFilter(name, jql, settings={}):
     ## Create a Jira filter
     logging.info("Created a new filter in Jira {name}".format(name=name))
     return(mkJiraFilter(name, jql, settings))
+
+###############################################################################
+# Main logic
+###############################################################################
+
+#######################################
+# Process request
+#######################################
+def process(aTask):
+    tbl = "testSchedule"
+
+    # Convert jql in a string form to json
+    req = json.loads(aTask["jira"])
+    logging.debug("Jira request: {}".format(req))
+
+    # Response of the jql request
+    jqlRslt = search(req)
+
+    # If jira request fails, update testSchdule and return
+    if jqlRslt["status"] == False:
+        dbConn.modMultiVals(
+            tbl,
+            ["id"], aTask["id"],
+            ["status", "finished", "msg"],
+            ["Fail", datetime.now(), jqlRslt["result"]])
+        logging.error("Failed on jira - search: {}".format(jqlRslt['result']))
+        return jqlRslt
+
+    # Update testSchedue with the jira result
+    dbConn.modMultiVals(
+        tbl,
+        ["id"], [aTask["id"]],
+        ["jiraResp"], [json.dumps(jqlRslt["keys"], separators=(',', ':'))])
+    logging.info("Updated ID {id} with jira response".format(
+        id=aTask['id']))
+
+    # Create a new jira based on the given jql
+    if "makeFilter" in req and "useFilter" not in req:
+        fltrRslt = jira.mkFilter(req["makeFilter"], jqlRslt["jql"])
+        if fltrRslt["status"] == False:
+            dbConn.modMultiVals(
+                tbl,
+                ["id"], aTask["id"],
+                ["status", "finished", "msg"],
+                ["Fail", datetime.now(), fltrRslt["result"]])
+            logging.error("Unable to create a Jira filter: {}".format(
+                req['makeFilter']))
+        else:
+            logging.error("Successfully created a Jira filter: {}".format(
+                req['makeFilter']))
+
+    return jqlRslt
