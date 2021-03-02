@@ -14,11 +14,21 @@ from urllib.parse import urlencode
 import os
 import jql
 import input
-import jiraFilter
+import jira
 import util
 from dotenv import load_dotenv
 load_dotenv()
 import gitdb
+
+def jiraSearch():
+    aTask = task.next()
+    req = json.loads(aTask["jira"])
+    jqlRslt = jira.search(req)
+    print("jiraSearch:", jqlRslt)
+
+def nextTask():
+    rslt = task.next()
+    print("nextTask:", rslt)
 
 def getGitHash():
     aTask = {"gitBranch": "dev", "gitHash": "x"}
@@ -195,14 +205,14 @@ def getRow():
 
 def mkFilter():
     print("test - mkFilter")
-    name = "filterTest8"
+    name = "filterTest10"
     jql = "project = QUES AND Labels = CSULAWeek01"
     # jql = "project = QUES ANDdsf Labels = CSULAWeek01"
     # settings = {"description": "testing"}
-    # settings = {"shareGroup": "AI Engineer"}
-    settings = {"shareGroup": "xxx"}
-    rslt = jiraFilter.mkFilter(name, jql, settings)
-    # rslt = jiraFilter.mkFilter(name, jql)
+    settings = {"shareGroup": "AI Engineer"}
+    # settings = {"shareGroup": "xxx"}
+    rslt = jira.mkFilter(name, jql, settings)
+    # rslt = jira.mkFilter(name, jql)
     print(rslt)
 
 
@@ -213,7 +223,7 @@ def filterExistsQ():
     # name = "MacDemoQUES"
     # name = "utest bug collector"
     name = "Fall19bus"
-    rslt = jiraFilter.filterExistsQ(name)
+    rslt = jira.filterExistsQ(name)
     print(rslt)
 
 
@@ -272,7 +282,7 @@ def makeFilter():
     print("test - makeFilter")
     tmpName = "QUES search"
     tmpJql = 'project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND "Mathematica Specification" !~ MatchSpec'
-    jiraFilter.mkFilter(tmpName, tmpJql)
+    jira.mkFilter(tmpName, tmpJql)
 
 
 def issueSearch():

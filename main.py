@@ -26,7 +26,6 @@ import os
 import time
 import input
 import jql
-import jiraFilter
 import test
 import sys
 import json
@@ -38,7 +37,10 @@ import git
 import gitdb
 
 # logging.basicConfig(level=logging.DEBUG)
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s, %(levelname)s: %(message)s')
 
 ###############################################################################
 # Support functions
@@ -48,6 +50,9 @@ logging.basicConfig(level=logging.INFO)
 #
 #######################################
 def testing():
+
+    # test.jiraSearch()
+    # test.nextTask()
     # test.clearRefs()
     # test.getGitHash()
     # test.validateBranchQ()
@@ -87,6 +92,8 @@ if __name__ == '__main__':
                 logging.info("No pending tasks: sleeping")
                 time.sleep(int(os.environ.get('sleepTime')))
                 continue
+            ## Update status to running
+            task.modStts(aTask["id"], "running")
 
             ## Validate and checkout gitBranch and gitHash
             aTask["gitHash"] = repo.getGitHash(aTask)
@@ -107,4 +114,13 @@ if __name__ == '__main__':
             ### Add cleanup code if needed
             terminateQ = True
         else:
-            schedule.task(aTask)
+            rslt = schedule.task(aTask)
+            if rslt["status"] == False:
+                logging.error("Task {id} failed: {msg}".format(
+                    id=aTask["id"], msg=aTask["result"]))
+            else:
+                ## Update status to running
+                task.modStts(aTask["id"], "success")
+                logging.info("Task {id} completed successfully".format(
+                    id=aTask["id"]
+                ))
