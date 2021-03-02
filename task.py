@@ -16,12 +16,13 @@ from datetime import datetime
 #######################################
 # xxxxx
 #######################################
-def modStts(id, stts, msg=""):
+def modStts(id, stts, cols=[], vals=[]):
     tbl = "testSchedule"
-    colsCond = ["status", "msg"]
+    colsDb = ["status"] + cols
+    valsDb = [stts] + vals
 
     # Get a pending task
-    dbConn.modMultiVals(tbl, ["id"], [id], colsCond, [stts, msg])
+    dbConn.modMultiVals(tbl, ["id"], [id], colsDb, valsDb)
 
 ###############################################################################
 # Main logic

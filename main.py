@@ -50,7 +50,7 @@ logging.basicConfig(
 #
 #######################################
 def testing():
-
+    test.modStts()
     # test.jiraSearch()
     # test.nextTask()
     # test.clearRefs()
@@ -101,12 +101,14 @@ if __name__ == '__main__':
         except git.exc.GitCommandError as err:
             msgErr = "Task {id} has an invalid gitBranch: {branch}".format(
                 id=aTask["id"], branch=aTask["gitBranch"])
-            task.modStts(aTask["id"], "fail", msg="Invalid gitBranch")
+            task.modStts(aTask["id"], "fail",
+                cols=["msg"], vals=["Invalid gitBranch"])
             logging.error(msgErr)
         except gitdb.exc.BadName as err:
             msgErr = "Task {id} has an invalid gitHash: {gitHash}".format(
                 id=aTask["id"], gitHash=aTask["gitHash"])
-            task.modStts(aTask["id"], "fail", msg="Invalid gitHash")
+            task.modStts(aTask["id"], "fail",
+                cols=["msg"], vals=["Invalid gitHash"])
             logging.error(msgErr)
         except NameError as err:
             logging.error(err)

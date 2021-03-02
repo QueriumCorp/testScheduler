@@ -20,6 +20,10 @@ from dotenv import load_dotenv
 load_dotenv()
 import gitdb
 
+
+def modStts():
+    task.modStts(1, "testing", ["msg"], ["testing msg"])
+
 def jiraSearch():
     aTask = task.next()
     req = json.loads(aTask["jira"])
