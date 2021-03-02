@@ -19,10 +19,13 @@ import util
 from dotenv import load_dotenv
 load_dotenv()
 import gitdb
+from datetime import datetime
 
 
 def modStts():
-    task.modStts(1, "testing", ["msg"], ["testing msg"])
+    task.modStts(1, "testing",
+    ["msg", "started"],
+    ["testing msg", datetime.utcnow()])
 
 def jiraSearch():
     aTask = task.next()

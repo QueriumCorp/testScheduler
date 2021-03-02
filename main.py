@@ -35,6 +35,7 @@ import schedule
 import repo
 import git
 import gitdb
+from datetime import datetime
 
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.INFO)
@@ -93,7 +94,8 @@ if __name__ == '__main__':
                 time.sleep(int(os.environ.get('sleepTime')))
                 continue
             ## Update status to running
-            task.modStts(aTask["id"], "running")
+            task.modStts(aTask["id"], "running",
+                cols=["started"],vals=[datetime.utcnow()])
 
             ## Validate and checkout gitBranch and gitHash
             aTask["gitHash"] = repo.getGitHash(aTask)
@@ -102,19 +104,23 @@ if __name__ == '__main__':
             msgErr = "Task {id} has an invalid gitBranch: {branch}".format(
                 id=aTask["id"], branch=aTask["gitBranch"])
             task.modStts(aTask["id"], "fail",
-                cols=["msg"], vals=["Invalid gitBranch"])
+                cols=["msg", "finished"],
+                vals=["Invalid gitBranch", datetime.utcnow()])
             logging.error(msgErr)
         except gitdb.exc.BadName as err:
             msgErr = "Task {id} has an invalid gitHash: {gitHash}".format(
                 id=aTask["id"], gitHash=aTask["gitHash"])
             task.modStts(aTask["id"], "fail",
-                cols=["msg"], vals=["Invalid gitHash"])
+                cols=["msg", "finished"],
+                vals=["Invalid gitHash", datetime.utcnow()])
             logging.error(msgErr)
         except NameError as err:
             logging.error(err)
         except KeyboardInterrupt:
             ### Add cleanup code if needed
             terminateQ = True
+        except:
+            logging.error(msgErr)
         else:
             rslt = schedule.task(aTask)
             if rslt["status"] == False:
@@ -122,7 +128,9 @@ if __name__ == '__main__':
                     id=aTask["id"], msg=aTask["result"]))
             else:
                 ## Update status to running
-                task.modStts(aTask["id"], "success")
+                task.modStts(aTask["id"], "success",
+                    cols=["finished"], vals=[datetime.utcnow()])
+
                 logging.info("Task {id} completed successfully".format(
                     id=aTask["id"]
                 ))
