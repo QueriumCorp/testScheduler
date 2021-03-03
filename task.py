@@ -3,6 +3,7 @@
 # Handle tasks
 ###############################################################################
 import dbConn
+import json
 from datetime import datetime
 
 ###############################################################################
@@ -40,5 +41,11 @@ def next():
 
     # Convert the data into an object
     rsltObj = dbConn.mkObj(dbConn.getFields("testSchedule"), data[0])
+
+    # Convert json-string values into json
+    if "jira" in rsltObj:
+        rsltObj["jira"] = json.loads(rsltObj["jira"])
+    if "skipStatuses" in rsltObj:
+        rsltObj["skipStatuses"] = json.loads(rsltObj["skipStatuses"])
 
     return rsltObj
