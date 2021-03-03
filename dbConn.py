@@ -227,3 +227,20 @@ def fetchallQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
 def execQuery(sql, vals, fldsRtrn=[], mkObjQ=False):
     valTuple = tuple(vals) if not isinstance(vals, tuple) else vals
     exec(sql, vals=valTuple, cmd="commit")
+
+
+#######################################
+# Get unq IDs of question IDs
+# parameters:
+#######################################
+def getUnq(qstnIds, flat=True):
+    tbl = "question"
+
+    # Build a sql query for inserting multiple rows
+    sqlIds = ",".join(map(lambda x: str(x), qstnIds))
+    sql = "SELECT unq FROM {tbl} WHERE id in({ids})".format(
+        tbl=tbl, ids=sqlIds)
+    # logging.debug("getUnq - sql: {sql}".format(sql=sql))
+    rslt = exec(sql)
+
+    return [item[0] for item in rslt] if flat else rslt
