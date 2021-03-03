@@ -11,6 +11,7 @@ import jql
 import jira
 from datetime import datetime
 import random
+import task as taskModule
 
 ###############################################################################
 # Support functions
@@ -125,12 +126,14 @@ def rmExistingPaths(keysCond, data):
         idsComp = list(map(lambda x: x["id"], completed))
         dbConn.execQuery(mkQueryUpdate(tbl, len(idsComp)), idsComp)
         logging.info(
-            "Changed the status from completed to pending: {}".format(len(completed)))
+            "Changed the status from completed to pending: {}".format(
+                len(completed)))
 
     # Get the ones already in pending
     pending = list(filter(lambda x: x["status"] == "pending", onesInDb))
     logging.info(
-        "Test paths that are already pending: {}".format(len(pending)))
+        "Already pending: {}".format(
+            len(pending)))
 
     # Remove the paths that are already in testPath because their status
     # changed to pending
@@ -146,56 +149,30 @@ def rmExistingPaths(keysCond, data):
     return result
 
 #######################################
-# Add question paths to testPath
-# Return:
-# status: True/False
-# result: a number of test paths in a question added in testPath
+# mk test paths
 #######################################
-def qstnToTestPath(info, settings):
-    logging.info("Scheduling paths in {}".format(info['key']))
-    # Get question_id of a question unq
-    qstnId = dbConn.getRow("question", ["unq"], [info["key"]], ["id"], fltr="")
-
-    if qstnId is None or len(qstnId) < 1:
-        return {
-            "status": False,
-            "result": "{} was not found in UDB".format(info['key'])
-        }
-    if len(qstnId) > 1:
-        return {
-            "status": False,
-            "result": "Multiple rows have the same {info}: {qstnId}".format(info=info['key'], qstnId=qstnId)
-        }
-
-    # Get paths in a question
-    # print (settings["skipStatuses"])
-    qstnId = qstnId[0]
+def mkTestPath(settings, qstnId, paths):
     pathFlds = ["id", "priority"]
-    paths = dbConn.getPathsInQstn(
-        qstnId[0],
-        json.loads(settings["skipStatuses"]),
-        pathFlds,
-        flat=False
-    )
-    logging.info("Number of paths in UDB: {}".format(len(paths)))
+
     if len(paths) < 1:
         return {
             "status": True,
             "result": 0
         }
 
+    testPaths = paths
     # If [paths] > limitPaths, sample the paths
     if "limitPaths" in settings and settings["limitPaths"] != -1:
         if len(paths) > settings["limitPaths"]:
             logging.info("Sampled the paths to {}".format(
                 settings['limitPaths']))
-            paths = random.sample(paths, settings["limitPaths"])
+            testPaths = random.sample(paths, settings["limitPaths"])
 
     # Make dictionary of rows for the testPath table
     skipFields = ["msg"]
     pathSttngs = []
-    settings["question_id"] = qstnId[0]
-    for path in paths:
+    settings["question_id"] = qstnId
+    for path in testPaths:
         settings["path_id"] = path[0]
         # Inherit the priority field from path to testPath
         if "priority" in pathFlds:
@@ -210,10 +187,10 @@ def qstnToTestPath(info, settings):
 
     # Add the test paths in the testPath table
     if len(newPaths) > 0:
-        logging.info("New test paths: {}".format(len(newPaths)))
+        logging.info("Added paths: {}".format(len(newPaths)))
         dbConn.addTestPaths(newPaths)
     else:
-        logging.info("No new test paths to schedule")
+        logging.info("No paths to schedule")
 
     return {
         "status": True,
@@ -221,28 +198,199 @@ def qstnToTestPath(info, settings):
     }
 
 #######################################
+# Add question paths to testPath
+# Return:
+# status: True/False
+# result: a number of test paths in a question added in testPath
+#######################################
+def qstnToTestPath(settings, unq):
+    logging.info("Scheduling paths in {}".format(unq))
+    # Get question_id of a question unq
+    qstnData = dbConn.getRow("question", ["unq"], [unq], ["id"], fltr="")
+
+    if qstnData is None or len(qstnData) < 1:
+        return {
+            "status": False,
+            "result": "Invalid unq"
+        }
+    elif len(qstnData) > 1:
+        return {
+            "status": False,
+            "result": "Multiple questions have the same unq"
+        }
+
+    # Get paths in a question
+    qstnId = qstnData[0][0]
+    pathFlds = ["id", "priority"]
+    paths = dbConn.getPathsInQstn(
+        qstnId,
+        settings["skipStatuses"],
+        pathFlds,
+        flat=False
+    )
+    logging.info("Total number of paths: {}".format(len(paths)))
+
+    return mkTestPath(settings, qstnId, paths)
+
+#######################################
 # Add questions to testPath
 # Return:
 # status: True/False
 # result: a number of questions are added in testPath
 #######################################
-def qstnsToTestPath(qstns, settings):
-    if len(qstns["keys"]) < 1:
+def qstnsToTestPath(settings, qstns):
+    if len(qstns) < 1:
         logging.info("No question to test")
         return {"status": True, "result": 0}
 
-    logging.info("Question count: {}".format(len(qstns['keys'])))
+    logging.info("Question count: {}".format(len(qstns)))
     result = []
     testCnt = 1
-    for qstnInfo in qstns["keys"]:
-        if testCnt > 3:
+    for qstnUnq in qstns:
+        if testCnt > 4:
             break
         testCnt += 1
-        rsltQstn = qstnToTestPath(qstnInfo, settings)
-        rsltQstn["unq"] = qstnInfo['key']
+        rsltQstn = qstnToTestPath(settings, qstnUnq)
+        rsltQstn["unq"] = qstnUnq
         result.append(rsltQstn)
 
     return result
+
+
+#######################################
+# Identify the schedule reqType
+# Returns: a string of a schedule reqType
+#######################################
+def getScheduleType(req):
+    if "useFilter" in req or "jql" in req:
+        return "jira"
+    elif "questions" in req:
+        return "question"
+    elif "paths" in req:
+        return "path"
+    else:
+        return "invalid"
+
+#######################################
+# Handle when schedule reqType is jira
+#######################################
+def handleJira(aTask):
+    data = jira.process(aTask)
+    rslt = []
+    if data["status"] == True:
+        rslt = list(map(lambda x: x["key"], data["keys"]))
+        return {
+            "status": True,
+            "result": rslt
+        }
+
+    return rslt
+
+#######################################
+# Handle when schedule reqType is question
+#######################################
+def handleQuestion(aTask):
+    rslt = []
+    if "questions" in aTask["jira"] and len(aTask["jira"]["questions"])>0:
+        rsltTmp = aTask["jira"]["questions"]
+        rslt = list(filter(lambda x: "QUES-" in x, rsltTmp))
+        if len(rslt) != len(rsltTmp):
+            logging.warning("Invalid questions: {}".format(
+                set(rsltTmp) - set(rslt)
+            ))
+
+    return {
+        "status": True,
+        "result": rslt
+    }
+
+
+#######################################
+# Handle when schedule reqType is path
+#######################################
+def handlePath(aTask):
+    rslt = []
+    if "paths" in aTask["jira"] and len(aTask["jira"]["paths"])>0:
+        rslt = aTask["jira"]["paths"]
+
+    return {
+        "status": True,
+        "result": rslt
+    }
+
+#######################################
+# Handle when schedule reqType is invalid
+#######################################
+def handleInvalid(aTask):
+    msg = "Invalid jira field in Task {}".format(aTask["id"])
+    logging.error(msg)
+    return {
+        "status": False,
+        "result": msg
+    }
+
+#######################################
+# Get questions in a schedule request
+# Return: a list of ques IDs: ["QUES-1234", "QUES-1235", etc]
+#######################################
+def processReq(aTask):
+    reqType = getScheduleType(aTask["jira"])
+
+    handlers = {
+        "jira": handleJira,
+        "question": handleQuestion,
+        "path": handlePath,
+        "invalid": handleInvalid
+    }
+    rslt = handlers[reqType](aTask)
+
+    # If status is fasle, update the status in testSchedule
+    if rslt["status"] == False:
+        taskModule.modStts(aTask["id"], "fail",
+            ["finished", "msg"],
+            [datetime.utcnow(), rslt["result"]]
+        )
+        return {
+            "reqType": reqType,
+            "result": []
+        }
+
+    return {
+        "reqType": reqType,
+        "result": rslt["result"]
+    }
+
+#######################################
+# Summarize the result
+#######################################
+def summarizeQstn(tbl, aTask, data):
+    successQstns = list(filter(lambda x: x["status"] == True, data))
+    successUnqs = list(map(lambda x: x["unq"], successQstns))
+    logging.info("Questions scheduled: {}".format(len(successUnqs)))
+
+    failedQstns = list(filter(lambda x: x["status"] == False, data))
+    if len(failedQstns) > 0:
+        logging.warning("Questions failed: {}".format(len(failedQstns)))
+        failedUnqs = []
+        for i in failedQstns:
+            failedUnqs.append(i["unq"])
+            logging.warning("{unq} failed: {msg}".format(
+                unq=i["unq"], msg=i["result"]))
+
+        dbConn.modMultiVals(
+            tbl,
+            ["id"], [aTask["id"]],
+            ["status", "finished", "msg"],
+            [
+                "success" if len(failedQstns) == 0 else "failSome",
+                datetime.utcnow(),
+                json.dumps(
+                    {
+                        "success": successQstns,
+                        "fail": failedQstns
+                    },
+                    separators=(',', ':'))
+            ])
 
 
 ###############################################################################
@@ -252,33 +400,9 @@ def task(aTask):
     tbl = "testSchedule"
 
     # Add questions in testPath
-    jiraRslt = jira.process(aTask)
-    if jiraRslt["status"] == False:
-        return jiraRslt
+    rsltReq = processReq(aTask)
 
     # Add questions in testPath
-    rsltQstns = qstnsToTestPath(jiraRslt, aTask)
-
-    # Report failed questions
-    failedQstns = list(filter(lambda x: x["status"] == False, rsltQstns))
-    if len(failedQstns) > 0:
-        logging.warning("Failed on adding questions: {}".format(failedQstns))
-
-        dbConn.modMultiVals(
-            tbl,
-            ["id"], [aTask["id"]],
-            ["status", "finished", "msg"],
-            [
-                "success" if len(failedQstns) == 0 else "failedSome",
-                datetime.now(),
-                json.dumps(rsltQstns, separators=(',', ':'))
-            ])
-        return {
-            "status": False,
-            "result": "Failed to add paths in questions: {msg}".format(
-                msg=failedQstns
-            )}
-
-    return {
-        "status": True,
-        "result": "Completed successfully"}
+    if rsltReq["reqType"] == "jira" or rsltReq["reqType"] == "question":
+        rsltJira = qstnsToTestPath(aTask, rsltReq["result"])
+        summarizeQstn(tbl, aTask, rsltJira)

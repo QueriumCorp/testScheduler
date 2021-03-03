@@ -204,7 +204,7 @@ def process(aTask):
     tbl = "testSchedule"
 
     # Convert jql in a string form to json
-    req = json.loads(aTask["jira"])
+    req = aTask["jira"]
     logging.debug("Jira request: {}".format(req))
 
     # Response of the jql request

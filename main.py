@@ -51,7 +51,17 @@ logging.basicConfig(
 #
 #######################################
 def testing():
-    test.modStts()
+    # test.next()
+    # test.scheduleTask1()
+    test.scheduleByQstn()
+    # test.summarizeQstn()
+    # test.mkTestPath()
+    # test.handleQuestion()
+    # test.getUnq()
+    # test.handleJira()
+    # test.processReq()
+    # test.jiraProcess()
+    # test.modStts()
     # test.jiraSearch()
     # test.nextTask()
     # test.clearRefs()
@@ -82,7 +92,7 @@ def testing():
 if __name__ == '__main__':
 
     ### testing components
-    # testing()
+    testing()
 
     ### Get next task
     terminateQ = False
@@ -123,14 +133,14 @@ if __name__ == '__main__':
             logging.error(msgErr)
         else:
             rslt = schedule.task(aTask)
-            if rslt["status"] == False:
-                logging.error("Task {id} failed: {msg}".format(
-                    id=aTask["id"], msg=aTask["result"]))
-            else:
-                ## Update status to running
-                task.modStts(aTask["id"], "success",
-                    cols=["finished"], vals=[datetime.utcnow()])
+            # if rslt["status"] == False:
+            #     logging.error("Task {id} failed: {msg}".format(
+            #         id=aTask["id"], msg=aTask["result"]))
+            # else:
+            #     ## Update status to running
+            #     task.modStts(aTask["id"], "success",
+            #         cols=["finished"], vals=[datetime.utcnow()])
 
-                logging.info("Task {id} completed successfully".format(
-                    id=aTask["id"]
-                ))
+            #     logging.info("Task {id} completed successfully".format(
+            #         id=aTask["id"]
+            #     ))
