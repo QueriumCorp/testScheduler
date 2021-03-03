@@ -21,6 +21,96 @@ load_dotenv()
 import gitdb
 from datetime import datetime
 
+def next():
+    print("test - next")
+    task.modStts(1, "pending",["msg"],[""])
+    aTask = task.next()
+    print (aTask)
+
+def scheduleByQstn():
+    print("test - scheduleByQstn")
+    # dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
+    dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"questions":["QUES-6018","QUES-1","QUES-6019","QUES-12863"]}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
+    dataTask = dataRaw
+    dataTask["jira"] = json.loads(dataRaw["jira"])
+    dataTask["skipStatuses"] = json.loads(dataRaw["skipStatuses"])
+    schedule.task(dataTask)
+
+def summarizeQstn():
+    print("test - summarizeQstn")
+    task.modStts(1, "pending",["msg"],[""])
+    aTask = task.next()
+    tbl = "testSchedule"
+    data = [
+        {'status': True, 'result': 1, 'unq': 'QUES-12948'},
+        {'status': False, 'result': 'Invalid unq', 'unq': 'QUES-12889'},
+        {'status': True, 'result': 3, 'unq': 'QUES-12888'}
+    ]
+    schedule.summarizeQstn(tbl, aTask, data)
+
+
+def scheduleTask1():
+    task.modStts(1, "pending",["msg"],[""])
+    aTask = task.next()
+    schedule.task(aTask)
+
+def mkTestPath():
+    print("test - mkTestPath")
+    task.modStts(1, "pending",["msg"],[""])
+    aTask = task.next()
+    dataQstnId = 58419
+    pathFlds = ["id", "priority"]
+    dataPaths = dbConn.getPathsInQstn(
+        dataQstnId,
+        json.loads(aTask["skipStatuses"]),
+        pathFlds,
+        flat=False
+    )
+    # print (dataPaths)
+    rslt = schedule.mkTestPath(aTask, dataQstnId, dataPaths)
+    print (rslt)
+
+def handleQuestion():
+    print("test - handleQuestion")
+    tmpTask = {'id': 1, 'name': '5731520200708080941',
+    'jira': {"questions": ["QUES-1", "QUES2", "QUES-1234", "3"]}, 'author': 'evan'}
+
+    rslt = schedule.handleQuestion(tmpTask)
+    print (rslt)
+
+
+def getUnq():
+    print("getUnq")
+    tmpData = {'id': 1, 'name': '5731520200708080941',
+    'jira': '{"questions":[1,2,3,4]}', 'author': 'evan'}
+    qstnIds = json.loads(tmpData["jira"])
+
+    rslt = dbConn.getUnq(qstnIds["questions"])
+    print (rslt)
+
+def handleJira():
+    task.modStts(1, "pending",["msg"],[""])
+    aTask = task.next()
+    rslt = schedule.handleJira(aTask)
+    print ("handleJira:", rslt)
+
+def jiraProcess():
+    task.modStts(1, "pending",["msg"],[""])
+    aTask = task.next()
+    rslt = jira.process(aTask)
+    print("jiraProcess:", rslt)
+
+def processReq():
+    print("test - processReq")
+    # task.modStts(1, "pending",["msg"],[""])
+
+    # tmpTask = task.next()
+    tmpTask = {"jira": {"questions": ["QUES-1111", "QUES-2222"]}}
+    # tmpTask = {"jira": {"paths": ["1111", "2222"]}}
+    # tmpTask = {"id":1, "jira": {"someQuestion": "someMma function"}}
+
+    print(schedule.processReq(tmpTask))
+
 
 def modStts():
     task.modStts(1, "testing",
@@ -99,10 +189,11 @@ def addTestPaths():
 
 
 def getPathsInQstn():
-    rslt = dbConn.getPathsInQstn(
-        "QUES-12889", [], ["id", "priority"], flat=False)
-    # rslt = dbConn.getPathsInQstn(58418, [], ["id", "status"])
-    print("getPathsInQstn:", rslt)
+    print("test - getPathsInQstn")
+    # rslt = dbConn.getPathsInQstn(
+    #     "QUES-12889", [], ["id", "priority"], flat=False)
+    rslt = dbConn.getPathsInQstn(58418, [], ["id", "status"], flat=False)
+    print(rslt)
 
 
 def testMySqlConnector():
@@ -200,9 +291,11 @@ def scheduleTask():
 
 def getRow():
     print("test - getRow")
-    tmp = dbConn.getRow("testPath", ["status"], ["pending"], ["id"], fltr="")
+    # tmp = dbConn.getRow("testPath", ["status"], ["pending"], ["id"], fltr="")
     # tmp = dbConn.getRow("question", ["unq"], ["QUES-12880"], ["id"])
     # tmp = dbConn.getRow("question", ["unq"], ["QUES-12879"], ["id"])
+    tmp = dbConn.getRow("question", ["unq"], ["QUES-12860"], ["id"], fltr="")
+    print(tmp)
     print("len:", len(tmp))
 
     # tmp = dbConn.getRow("testSchedule", ["id"], [1], ["id", "author"])
