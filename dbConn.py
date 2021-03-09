@@ -118,7 +118,7 @@ def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1"):
 # Get paths in a question
 # parameters:
 # identifier: unq or id of a question
-# statuses: a list of path status to get
+# statuses: a list of path status to skip
 # colsRtrn: a list of fields to be returned
 # [fltr]: additional query attributes
 # [flat]: flatten the result
@@ -244,3 +244,42 @@ def getUnq(qstnIds, flat=True):
     rslt = exec(sql)
 
     return [item[0] for item in rslt] if flat else rslt
+
+
+#######################################
+# Get path ids and with their priority
+# parameters:
+#######################################
+def getPaths(flds, ids, skipStatus=[]):
+    tbl = "path"
+    stts = "\"" + "\",\"".join(skipStatus) + "\""
+
+    "select id,priority from path where status not in ('xx', 'yy') and id in (3,4)"
+
+    # Build a sql query for inserting multiple rows
+    rtrnFlds = ",".join(flds)
+    sqlIds = ",".join(list(map(lambda x: str(x), ids)))
+    sqlStts = "" if len(skipStatus) == 0 else \
+        "status NOT IN ({stts}) AND ".format(stts=stts)
+    sql = "SELECT {rtrn} FROM {tbl} WHERE {sqlStts} id IN ({ids})".format(
+        rtrn=rtrnFlds, tbl=tbl, sqlStts=sqlStts, ids=sqlIds)
+    logging.debug("getUnq - sql: {sql}".format(sql=sql))
+    rslt = exec(sql)
+
+    return rslt
+
+#######################################
+# Get question ids of path ids
+#######################################
+def getQstnIds(pathIds):
+    tbl = "question_path"
+    flds = ["question_id", "path_id"]
+    # Build a sql query for inserting multiple rows
+    rtrnFlds = ",".join(flds)
+    sqlIds = ",".join(list(map(lambda x: str(x), pathIds)))
+    sql = "SELECT {rtrn} FROM {tbl} WHERE path_id IN ({ids})".format(
+        rtrn=rtrnFlds, tbl=tbl, ids=sqlIds)
+    # print(sql)
+    rslt = exec(sql)
+
+    return rslt
