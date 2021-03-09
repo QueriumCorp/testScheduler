@@ -144,14 +144,3 @@ if __name__ == '__main__':
             logging.error(msgErr)
         else:
             rslt = schedule.task(aTask)
-            # if rslt["status"] == False:
-            #     logging.error("Task {id} failed: {msg}".format(
-            #         id=aTask["id"], msg=aTask["result"]))
-            # else:
-            #     ## Update status to running
-            #     task.modStts(aTask["id"], "success",
-            #         cols=["finished"], vals=[datetime.utcnow()])
-
-            #     logging.info("Task {id} completed successfully".format(
-            #         id=aTask["id"]
-            #     ))
