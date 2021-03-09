@@ -104,10 +104,11 @@ def getNewPaths(testName, pathIds):
     tbl = "testPath"
     getFlds = ['path_id']
     sqlRtrn = ",".join(getFlds)
-    sqlCond = "WHERE name={name}".format(name=testName)
+    sqlCond = "WHERE name='{name}'".format(name=testName)
     sql = "SELECT {sqlRtrn} FROM {tbl} {sqlCond}".format(
         sqlRtrn=sqlRtrn, tbl=tbl, sqlCond=sqlCond)
-    # print (sql)
+    logging.debug("getNewPaths-sql: {}".format(sql))
+
     pathIdsInDb = dbConn.fetchallQuery(
         sql, [], fldsRtrn=getFlds, mkObjQ=False)
     pathIdsInDb = set([item[0] for item in pathIdsInDb])
@@ -346,11 +347,13 @@ def pathsToTestPath(aTask, pathIds):
     # Get {question_id, path_id, priority} fields of each path in the task
     # request
     pathInfo = mkPathInput(aTask)
+    logging.debug("pathsToTestPath-pathInfo: {}".format(pathInfo))
 
     # Remove any path_id(s) that are already in testPath under task["name"]
     allPaths = list(map(lambda x: x["path_id"], pathInfo))
     newPaths = getNewPaths(aTask["name"], allPaths)
     newInfo = list(filter(lambda x: x["path_id"] in newPaths, pathInfo))
+    logging.debug("pathsToTestPath-newInfo: {}".format(newInfo))
 
     # Add the new paths in testPath
     rslt = mkTestPath(aTask, newInfo)
@@ -464,12 +467,23 @@ def processReq(aTask):
 # Summarize the result
 #######################################
 def summarizeQstn(tbl, aTask, data):
+    logging.info("Task {id} was scheduled".format(
+        id=aTask["id"], task=aTask["name"]))
     successQstns = list(filter(lambda x: x["status"] == True, data))
     successUnqs = list(map(lambda x: x["unq"], successQstns))
     logging.info("Questions scheduled: {}".format(len(successUnqs)))
+    logging.debug("summarizeQstn - data: {}".format(data))
 
     failedQstns = list(filter(lambda x: x["status"] == False, data))
-    if len(failedQstns) > 0:
+    logging.debug("summarizeQstn - failedQstns: {}".format(failedQstns))
+    if len(failedQstns) == 0:
+        dbConn.modMultiVals(
+            tbl,
+            ["id"], [aTask["id"]],
+            ["status", "finished"],
+            ["success", datetime.utcnow()]
+        )
+    else:
         logging.warning("Questions failed: {}".format(len(failedQstns)))
         failedUnqs = []
         for i in failedQstns:
@@ -492,6 +506,30 @@ def summarizeQstn(tbl, aTask, data):
                     separators=(',', ':'))
             ])
 
+#######################################
+# Summarize the result based on scheduling by path IDs
+#######################################
+def summarizePath(tbl, aTask, data):
+    logging.info("Task {id} was scheduled".format(
+        id=aTask["id"], task=aTask["name"]))
+    # Updated the status on the fail case
+    if not data["status"]:
+        dbConn.modMultiVals(
+            tbl,
+            ["id"], [aTask["id"]],
+            ["status", "finished", "msg"],
+            ["fail", datetime.utcnow(), data["result"]]
+        )
+        return
+    else:
+        dbConn.modMultiVals(
+            tbl,
+            ["id"], [aTask["id"]],
+            ["status", "finished"],
+            ["success", datetime.utcnow()]
+        )
+        return
+
 
 ###############################################################################
 # Main logic
@@ -501,10 +539,12 @@ def task(aTask):
 
     # Add questions in testPath
     rsltReq = processReq(aTask)
+    logging.debug("task-rsltReq: {}".format(rsltReq))
 
     # Add request data in testPath
     if rsltReq["reqType"] == "jira" or rsltReq["reqType"] == "question":
-        rsltJira = qstnsToTestPath(aTask, rsltReq["result"])
-        # summarizeQstn(tbl, aTask, rsltJira)
+        rslt = qstnsToTestPath(aTask, rsltReq["result"])
+        summarizeQstn(tbl, aTask, rslt)
     elif rsltReq["reqType"] == "path":
-        pathsToTestPath(aTask, rsltReq["result"])
+        rslt = pathsToTestPath(aTask, rsltReq["result"])
+        summarizePath(tbl, aTask, rslt)
