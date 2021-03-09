@@ -51,9 +51,18 @@ logging.basicConfig(
 #
 #######################################
 def testing():
+    test.pathsToTestPath()
+    # test.mkPathInput()
+    # test.getPathInfo()
+    # test.allignQstnPath()
+    # test.getNewPaths()
+    # test.rand1()
+    # test.rand()
+    # test.getQstnIds()
+    # test.getPaths()
     # test.next()
     # test.scheduleTask1()
-    test.scheduleByQstn()
+    # test.scheduleByQstn()
     # test.summarizeQstn()
     # test.mkTestPath()
     # test.handleQuestion()
@@ -83,7 +92,6 @@ def testing():
     # test.modMultiVals()
     # test.qstnToTestPath()
     # test.scheduleTask()
-    # test.rmExistingPaths()
     sys.exit()
 
 ###############################################################################

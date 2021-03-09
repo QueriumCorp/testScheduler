@@ -95,107 +95,177 @@ def mkDict(dataA, dataB):
     return rslt
 
 #######################################
-# Handle test paths already in the testPath table.
-# - Remove the test paths that are already in pending status
-# - Change status to pending if they are in completed status and remove
+# Remove path IDs that are already exists in the testPath table.
 #######################################
-def rmExistingPaths(keysCond, data):
-    tbl = "testPath"
-    getFlds = ['id', 'name', 'path_id', 'status']
+def getNewPaths(testName, pathIds):
+    pathIdsInData = set(pathIds)
 
     # Build a sql query for select
+    tbl = "testPath"
+    getFlds = ['path_id']
     sqlRtrn = ",".join(getFlds)
-    sqlCond = (") OR (".join(["=%s AND ".join(keysCond)+"=%s"]*len(data)))
-    sqlCond = "("+sqlCond+")"
-    sql = "SELECT {sqlRtrn} FROM {tbl} WHERE {sqlCond}".format(
+    sqlCond = "WHERE name={name}".format(name=testName)
+    sql = "SELECT {sqlRtrn} FROM {tbl} {sqlCond}".format(
         sqlRtrn=sqlRtrn, tbl=tbl, sqlCond=sqlCond)
+    # print (sql)
+    pathIdsInDb = dbConn.fetchallQuery(
+        sql, [], fldsRtrn=getFlds, mkObjQ=False)
+    pathIdsInDb = set([item[0] for item in pathIdsInDb])
 
-    # Make values to test
-    sqlVals = [i for row in data for i in [row[k] for k in keysCond]]
+    newPathIds = pathIdsInData.difference(pathIdsInDb)
+    return list(newPathIds)
 
-    # Get test paths that are already in testPath
-    onesInDb = dbConn.fetchallQuery(
-        sql, sqlVals, fldsRtrn=getFlds, mkObjQ=True)
-    # print(onesInDb)
-    # sys.exit()
-
-    # Filter the ones in completed
-    completed = list(filter(lambda x: x["status"] == "completed", onesInDb))
-    # Update the status from completed to pending
-    if len(completed) > 0:
-        idsComp = list(map(lambda x: x["id"], completed))
-        dbConn.execQuery(mkQueryUpdate(tbl, len(idsComp)), idsComp)
-        logging.info(
-            "Changed the status from completed to pending: {}".format(
-                len(completed)))
-
-    # Get the ones already in pending
-    pending = list(filter(lambda x: x["status"] == "pending", onesInDb))
-    logging.info(
-        "Already pending: {}".format(
-            len(pending)))
-
-    # Remove the paths that are already in testPath because their status
-    # changed to pending
-    rmPaths = mkDict(pending, completed)
-    result = []
-    for item in data:
-        if item["name"] in rmPaths.keys():
-            if item["path_id"] not in rmPaths[item["name"]]:
-                result.append(item)
-        else:
-            result.append(item)
-
-    return result
 
 #######################################
 # mk test paths
 #######################################
-def mkTestPath(settings, qstnId, paths):
-    pathFlds = ["id", "priority"]
+def mkTestPath(aTask, data):
+    tbl = "testPath"
+    skipFields = ["msg"]
 
-    if len(paths) < 1:
+    if len(data) < 1:
         return {
             "status": True,
             "result": 0
         }
 
-    testPaths = paths
-    # If [paths] > limitPaths, sample the paths
-    if "limitPaths" in settings and settings["limitPaths"] != -1:
-        if len(paths) > settings["limitPaths"]:
-            logging.info("Sampled the paths to {}".format(
-                settings['limitPaths']))
-            testPaths = random.sample(paths, settings["limitPaths"])
-
     # Make dictionary of rows for the testPath table
-    skipFields = ["msg"]
-    pathSttngs = []
-    settings["question_id"] = qstnId
-    for path in testPaths:
-        settings["path_id"] = path[0]
-        # Inherit the priority field from path to testPath
-        if "priority" in pathFlds:
-            idx = pathFlds.index('priority')
-            settings["priority"] = path[idx]
-
-        pathSttngs.append(defaultSettings("testPath", settings, skipFields))
-
-    # Remove the test paths that are already in testPath
-    condFlds = ['name', 'path_id']
-    newPaths = rmExistingPaths(condFlds, pathSttngs)
+    dbData = []
+    for pathInfo in data:
+        pathRow = defaultSettings(tbl, aTask, skipFields)
+        for k in pathInfo:
+            if k in pathRow:
+                pathRow[k] = pathInfo[k]
+        dbData.append(pathRow)
 
     # Add the test paths in the testPath table
-    if len(newPaths) > 0:
-        logging.info("Added paths: {}".format(len(newPaths)))
-        dbConn.addTestPaths(newPaths)
+    if len(dbData) > 0:
+        dbConn.addTestPaths(dbData)
+        logging.info("Added paths: {}".format(len(dbData)))
     else:
-        logging.info("No paths to schedule")
+        logging.info("No paths were added")
 
     return {
         "status": True,
-        "result": len(newPaths)
+        "result": len(dbData)
     }
+
+#######################################
+#
+#######################################
+def allignQstnPath(keys, data):
+    pathToQstn = {}
+    pathsHaveExtra = set()
+    for i in data:
+        if i[1] in pathToQstn:
+            tmp = pathToQstn[i[1]]
+            tmp.append(i[0])
+            pathToQstn[i[1]] = tmp
+            pathsHaveExtra.add(i[1])
+        else:
+            pathToQstn[i[1]] = [i[0]]
+
+    missingPaths = set(keys).difference(set(pathToQstn.keys()))
+    extras = {}
+    # for i in pathsHaveExtra:
+    #     extras[i] = pathToQstn[i]
+
+    cleanData = {}
+    for i in pathToQstn:
+        if i not in pathsHaveExtra:
+            cleanData[i] = pathToQstn[i][0]
+            # cleanData.append(tuple([pathToQstn[i][0], i]))
+        else:
+            extras[i] = pathToQstn[i]
+
+    return {
+        "missingPaths": list(missingPaths),
+        "multiQstnPaths": extras,
+        "pathToQstn": cleanData
+    }
+
+#######################################
+#
+#######################################
+def getPathInfo(flds, skips, pathIds):
+    restFlds = list(filter(lambda x: x != "id", flds))
+    try:
+        idxId = flds.index("id")
+    except ValueError:
+        logging.error ("getPathInfo: missing the id element")
+        return []
+    else:
+        pathsDb = dbConn.getPaths(
+                flds,
+                pathIds,
+                skipStatus=skips
+            )
+
+        pathIdsDb = list(map(lambda x: x[idxId], pathsDb))
+        if (len(pathIdsDb) < len(pathIds)):
+            pathIdsDb = list(map(lambda x: x[idxId], pathsDb))
+            logging.warning("Path IDs weren't found in " + \
+                "the path table: {}".format(
+                    set(pathIds).difference(set(pathIdsDb))))
+
+        qstnIdPathId = dbConn.getQstnIds(pathIdsDb)
+        rsltClean = allignQstnPath(pathIdsDb, qstnIdPathId)
+
+        # Log any paths that have multiple questions links in question_path
+        if len(list(rsltClean["multiQstnPaths"].keys()))>0:
+            logging.warning("Path linked to multiple questions in " + \
+                "question_path: {}".format(
+                    list(rsltClean["multiQstnPaths"].keys())))
+
+        # Log any paths that aren't linked to any question in question_path
+        if len(rsltClean["missingPaths"])>0:
+            logging.warning("Path weren't found in question_path: {}".format(
+                rsltClean["missingPaths"]
+            ))
+
+        # Build dictionary of path_id and its info
+        cleanPaths = list(rsltClean["pathToQstn"].keys())
+        rslt = []
+        for i in pathsDb:
+            if i[idxId] in cleanPaths:
+                rslt.append(dbConn.mkObj(
+                    ["question_id", "path_id"] + restFlds,
+                    (rsltClean["pathToQstn"][i[idxId]],) + i
+                ))
+                # rslt.append((rsltClean["pathToQstn"][i[idxId]],) + i)
+
+        return rslt
+
+#######################################
+# Preprocess
+#######################################
+def mkPathInput(aTask):
+    pathFlds = ["id", "priority"]
+    restFlds = list(filter(lambda x: x != "id", pathFlds))
+    idxId = 0
+    reqType = getScheduleType(aTask["jira"])
+    rslt = []
+
+    if reqType == "jira" or reqType == "question":
+        paths = dbConn.getPathsInQstn(
+            aTask["question_id"],
+            aTask["skipStatuses"],
+            pathFlds,
+            flat=False
+        )
+        for i in paths:
+            rslt.append(
+                dbConn.mkObj(
+                    ["question_id", "path_id"] + restFlds,
+                    (aTask["question_id"],) + i
+                )
+            )
+    elif reqType == "path":
+        rslt = getPathInfo(
+            pathFlds, aTask["skipStatuses"],aTask["jira"]["paths"])
+
+    return rslt
+
 
 #######################################
 # Add question paths to testPath
@@ -203,7 +273,7 @@ def mkTestPath(settings, qstnId, paths):
 # status: True/False
 # result: a number of test paths in a question added in testPath
 #######################################
-def qstnToTestPath(settings, unq):
+def qstnToTestPath(aTask, unq):
     logging.info("Scheduling paths in {}".format(unq))
     # Get question_id of a question unq
     qstnData = dbConn.getRow("question", ["unq"], [unq], ["id"], fltr="")
@@ -221,28 +291,40 @@ def qstnToTestPath(settings, unq):
 
     # Get paths in a question
     qstnId = qstnData[0][0]
-    pathFlds = ["id", "priority"]
-    paths = dbConn.getPathsInQstn(
-        qstnId,
-        settings["skipStatuses"],
-        pathFlds,
-        flat=False
-    )
-    logging.info("Total number of paths: {}".format(len(paths)))
+    newTask = aTask
+    newTask["question_id"] = qstnId
+    pathInfo = mkPathInput(newTask)
 
-    return mkTestPath(settings, qstnId, paths)
+    # If the number of paths is larger than the limit, sample the paths
+    if "limitPaths" in newTask and newTask["limitPaths"] != -1:
+        if len(pathInfo) > newTask["limitPaths"]:
+            cntOld = len(pathInfo)
+            pathInfo = random.sample(pathInfo, newTask["limitPaths"])
+            logging.info("Sampled the paths from {cntOld} to {cntNew}".format(
+                cntOld=cntOld, cntNew=len(pathInfo)))
+
+    return mkTestPath(aTask, pathInfo)
+
+    # pathFlds = ["id", "priority"]
+    # paths = dbConn.getPathsInQstn(
+    #     qstnId,
+    #     aTask["skipStatuses"],
+    #     pathFlds,
+    #     flat=False
+    # )
+    # logging.info("Total number of paths: {}".format(len(paths)))
+    # return mkTestPath(aTask, qstnId, paths)
 
 #######################################
-# Add questions to testPath
+# Add questions in testPath
 # Return:
 # status: True/False
 # result: a number of questions are added in testPath
 #######################################
-def qstnsToTestPath(settings, qstns):
+def qstnsToTestPath(aTask, qstns):
     if len(qstns) < 1:
         logging.info("No question to test")
         return {"status": True, "result": 0}
-
     logging.info("Question count: {}".format(len(qstns)))
     result = []
     testCnt = 1
@@ -250,12 +332,29 @@ def qstnsToTestPath(settings, qstns):
         if testCnt > 4:
             break
         testCnt += 1
-        rsltQstn = qstnToTestPath(settings, qstnUnq)
+        rsltQstn = qstnToTestPath(aTask, qstnUnq)
         rsltQstn["unq"] = qstnUnq
         result.append(rsltQstn)
 
     return result
 
+#######################################
+# Add paths in testPath
+#######################################
+def pathsToTestPath(aTask, pathIds):
+
+    # Get {question_id, path_id, priority} fields of each path in the task
+    # request
+    pathInfo = mkPathInput(aTask)
+
+    # Remove any path_id(s) that are already in testPath under task["name"]
+    allPaths = list(map(lambda x: x["path_id"], pathInfo))
+    newPaths = getNewPaths(aTask["name"], allPaths)
+    newInfo = list(filter(lambda x: x["path_id"] in newPaths, pathInfo))
+
+    # Add the new paths in testPath
+    rslt = mkTestPath(aTask, newInfo)
+    return rslt
 
 #######################################
 # Identify the schedule reqType
@@ -291,7 +390,7 @@ def handleJira(aTask):
 #######################################
 def handleQuestion(aTask):
     rslt = []
-    if "questions" in aTask["jira"] and len(aTask["jira"]["questions"])>0:
+    if "questions" in aTask["jira"] and len(aTask["jira"]["questions"]) > 0:
         rsltTmp = aTask["jira"]["questions"]
         rslt = list(filter(lambda x: "QUES-" in x, rsltTmp))
         if len(rslt) != len(rsltTmp):
@@ -310,7 +409,7 @@ def handleQuestion(aTask):
 #######################################
 def handlePath(aTask):
     rslt = []
-    if "paths" in aTask["jira"] and len(aTask["jira"]["paths"])>0:
+    if "paths" in aTask["jira"] and len(aTask["jira"]["paths"]) > 0:
         rslt = aTask["jira"]["paths"]
 
     return {
@@ -346,7 +445,8 @@ def processReq(aTask):
 
     # If status is fasle, update the status in testSchedule
     if rslt["status"] == False:
-        taskModule.modStts(aTask["id"], "fail",
+        taskModule.modStts(
+            aTask["id"], "fail",
             ["finished", "msg"],
             [datetime.utcnow(), rslt["result"]]
         )
@@ -402,7 +502,9 @@ def task(aTask):
     # Add questions in testPath
     rsltReq = processReq(aTask)
 
-    # Add questions in testPath
+    # Add request data in testPath
     if rsltReq["reqType"] == "jira" or rsltReq["reqType"] == "question":
         rsltJira = qstnsToTestPath(aTask, rsltReq["result"])
-        summarizeQstn(tbl, aTask, rsltJira)
+        # summarizeQstn(tbl, aTask, rsltJira)
+    elif rsltReq["reqType"] == "path":
+        pathsToTestPath(aTask, rsltReq["result"])
