@@ -225,7 +225,7 @@ def process(aTask):
         tbl,
         ["id"], [aTask["id"]],
         ["jiraResp"], [json.dumps(jqlRslt["keys"], separators=(',', ':'))])
-    logging.info("Updated ID {id} with jira response".format(
+    logging.info("Updated Task {id} with jira response".format(
         id=aTask['id']))
 
     # Create a new jira based on the given jql

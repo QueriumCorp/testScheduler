@@ -283,3 +283,47 @@ def getQstnIds(pathIds):
     rslt = exec(sql)
 
     return rslt
+
+
+#######################################
+# Add a row in testSchedule
+# parameters:
+# A dictionaries. The dictionary keys are fields in testSchedule.
+# NOTE: some keys may not be valid fields, so extract only field keys from dict
+# Example:
+# addTestSchedule({"name": "test", "author": "eb", etc})
+#######################################
+def addTestSchedule(dataRow):
+    tbl = "testSchedule"
+    # Get only valid field keys in dataRow because dataRow may contain keys that
+    # are not valid fields in testPath.
+    keys = set(getFields(tbl)).intersection(set(dataRow.keys()))
+
+    # Build a sql query for inserting multiple rows
+    sqlKeys = ",".join(keys)
+    sqlPh = ",".join(["%s"]*len(keys))
+    sqlVals = [dataRow[k] for k in keys]
+    sql = "INSERT INTO {tbl} ({sqlKeys}) VALUES ({sqlPh})".format(
+        tbl=tbl, sqlKeys=sqlKeys, sqlPh=sqlPh)
+    logging.debug("testSchedule - sql: {sql}".format(sql=sql))
+    # print("testSchedule - sqlVals: {sqlVals}".format(
+        # sqlVals=tuple(sqlVals)))
+
+    exec(sql, cmd="commit", vals=tuple(sqlVals))
+
+
+#######################################
+# Get path_id with the given name
+#######################################
+def pathInTestPath(name, flat=True):
+    tbl = "testPath"
+    flds = ["path_id"]
+    # Build a sql query for inserting multiple rows
+    rtrnFlds = ",".join(flds)
+    sql = "SELECT {rtrn} FROM {tbl} WHERE name='{name}'".format(
+        rtrn=rtrnFlds, tbl=tbl, name=name)
+    logging.debug("pathInTask-sql: {}".format(sql))
+    rslt = exec(sql)
+
+    return [item[0] for item in rslt] if flat else rslt
+
