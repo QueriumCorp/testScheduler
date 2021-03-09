@@ -20,6 +20,69 @@ import util
 from dotenv import load_dotenv
 load_dotenv()
 
+def pathInTask():
+    print("test - pathInTask")
+    rslt = dbConn.pathInTestPath("5731520200708080941")
+    print(rslt)
+
+def testTask():
+    task.modStts(3, "pending", ["msg"], [""])
+    aTask = task.next()
+    schedule.task(aTask)
+
+def addTestSchedule():
+    print("test - addTestSchedule")
+    # data = {
+    #     "jira": json.dumps({"questions": ["QUES-6018", "QUES-12863"]}),
+    #     "gitBranch": "dev",
+    #     "gitHash": "6e89ed5325da173d621c1beae1e0b42331bd8b0a",
+    #     "name": "testingQuestion",
+    #     "author": "evan",
+    #     "gradeStyle": "gradeBasicAlgebra",
+    #     "policies": "$A1$",
+    #     "skipStatuses": json.dumps(["invalid"]),
+    #     "status": "pending",
+    #     "limitPaths": 5,
+    #     "priority": 2,
+    #     "limitPathTime": 600,
+    #     "host": "0.0.0.0",
+    #     "pid": -1,
+    #     "mmaVersion": "11.1",
+    #     "timeOutTime": 60,
+    #     "ruleMatchTimeOutTime": 120,
+    #     "msg": "",
+    #     "jiraResp": ""
+    # }
+    data = {
+        "jira": json.dumps({"paths": [65926,74824,11111]}),
+        "gitBranch": "dev",
+        "gitHash": "6e89ed5325da173d621c1beae1e0b42331bd8b0a",
+        "name": "testingPath",
+        "author": "evan",
+        "gradeStyle": "gradeBasicAlgebra",
+        "policies": "$A1$",
+        "skipStatuses": json.dumps(["invalid"]),
+        "status": "pending",
+        "limitPaths": 5,
+        "priority": 2,
+        "limitPathTime": 600,
+        "host": "0.0.0.0",
+        "pid": -1,
+        "mmaVersion": "11.1",
+        "timeOutTime": 60,
+        "ruleMatchTimeOutTime": 120,
+        "msg": "",
+        "jiraResp": ""
+    }
+    dbConn.addTestSchedule(data)
+
+def addTaskInSchedule():
+    print("test - addTaskInSchedule")
+    tbl = "testSchedule"
+    condCol = ["id"]
+    condV = ["id"]
+    dbConn.modMultiVals()
+
 def getPathInfo():
     print("test - getPathInfo")
     flds = ["id", "priority"]
@@ -102,8 +165,10 @@ def next():
 
 def scheduleByQstn():
     print("test - scheduleByQstn")
+    # '{"questions":["QUES-6018","QUES-1","QUES-6019","QUES-12863"]}'
+
     # dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
-    dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"questions":["QUES-6018","QUES-1","QUES-6019","QUES-12863"]}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending',
+    dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"questions":["QUES-6018","QUES-12863"]}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending',
                'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
     dataTask = dataRaw
     dataTask["jira"] = json.loads(dataRaw["jira"])

@@ -51,7 +51,11 @@ logging.basicConfig(
 #
 #######################################
 def testing():
-    test.pathsToTestPath()
+    test.testTask()
+    # test.pathInTask()
+    # test.addTestSchedule()
+    # test.scheduleByQstn()
+    # test.pathsToTestPath()
     # test.mkPathInput()
     # test.getPathInfo()
     # test.allignQstnPath()
@@ -62,7 +66,6 @@ def testing():
     # test.getPaths()
     # test.next()
     # test.scheduleTask1()
-    # test.scheduleByQstn()
     # test.summarizeQstn()
     # test.mkTestPath()
     # test.handleQuestion()
@@ -100,7 +103,7 @@ def testing():
 if __name__ == '__main__':
 
     ### testing components
-    testing()
+    # testing()
 
     ### Get next task
     terminateQ = False
