@@ -51,9 +51,21 @@ logging.basicConfig(
 #
 #######################################
 def testing():
+    test.testTask()
+    # test.pathInTask()
+    # test.addTestSchedule()
+    # test.scheduleByQstn()
+    # test.pathsToTestPath()
+    # test.mkPathInput()
+    # test.getPathInfo()
+    # test.allignQstnPath()
+    # test.getNewPaths()
+    # test.rand1()
+    # test.rand()
+    # test.getQstnIds()
+    # test.getPaths()
     # test.next()
     # test.scheduleTask1()
-    test.scheduleByQstn()
     # test.summarizeQstn()
     # test.mkTestPath()
     # test.handleQuestion()
@@ -83,7 +95,6 @@ def testing():
     # test.modMultiVals()
     # test.qstnToTestPath()
     # test.scheduleTask()
-    # test.rmExistingPaths()
     sys.exit()
 
 ###############################################################################
@@ -92,7 +103,7 @@ def testing():
 if __name__ == '__main__':
 
     ### testing components
-    testing()
+    # testing()
 
     ### Get next task
     terminateQ = False
@@ -133,14 +144,3 @@ if __name__ == '__main__':
             logging.error(msgErr)
         else:
             rslt = schedule.task(aTask)
-            # if rslt["status"] == False:
-            #     logging.error("Task {id} failed: {msg}".format(
-            #         id=aTask["id"], msg=aTask["result"]))
-            # else:
-            #     ## Update status to running
-            #     task.modStts(aTask["id"], "success",
-            #         cols=["finished"], vals=[datetime.utcnow()])
-
-            #     logging.info("Task {id} completed successfully".format(
-            #         id=aTask["id"]
-            #     ))

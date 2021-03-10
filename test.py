@@ -2,6 +2,7 @@
 # test.py
 # Testing module
 ###############################################################################
+import gitdb
 from mysql.connector import errorcode
 import mysql.connector
 import task
@@ -18,27 +19,166 @@ import jira
 import util
 from dotenv import load_dotenv
 load_dotenv()
-import gitdb
-from datetime import datetime
+
+def pathInTask():
+    print("test - pathInTask")
+    rslt = dbConn.pathInTestPath("5731520200708080941")
+    print(rslt)
+
+def testTask():
+    task.modStts(4, "pending", ["msg"], [""])
+    aTask = task.next()
+    schedule.task(aTask)
+
+def addTestSchedule():
+    print("test - addTestSchedule")
+    # data = {
+    #     "jira": json.dumps({"questions": ["QUES-6018", "QUES-12863"]}),
+    #     "gitBranch": "dev",
+    #     "gitHash": "6e89ed5325da173d621c1beae1e0b42331bd8b0a",
+    #     "name": "testingQuestion",
+    #     "author": "evan",
+    #     "gradeStyle": "gradeBasicAlgebra",
+    #     "policies": "$A1$",
+    #     "skipStatuses": json.dumps(["invalid"]),
+    #     "status": "pending",
+    #     "limitPaths": 5,
+    #     "priority": 2,
+    #     "limitPathTime": 600,
+    #     "host": "0.0.0.0",
+    #     "pid": -1,
+    #     "mmaVersion": "11.1",
+    #     "timeOutTime": 60,
+    #     "ruleMatchTimeOutTime": 120,
+    #     "msg": "",
+    #     "jiraResp": ""
+    # }
+    data = {
+        "jira": json.dumps({"paths": [65926,74824,11111]}),
+        "gitBranch": "dev",
+        "gitHash": "6e89ed5325da173d621c1beae1e0b42331bd8b0a",
+        "name": "testingPath",
+        "author": "evan",
+        "gradeStyle": "gradeBasicAlgebra",
+        "policies": "$A1$",
+        "skipStatuses": json.dumps(["invalid"]),
+        "status": "pending",
+        "limitPaths": 5,
+        "priority": 2,
+        "limitPathTime": 600,
+        "host": "0.0.0.0",
+        "pid": -1,
+        "mmaVersion": "11.1",
+        "timeOutTime": 60,
+        "ruleMatchTimeOutTime": 120,
+        "msg": "",
+        "jiraResp": ""
+    }
+    dbConn.addTestSchedule(data)
+
+def addTaskInSchedule():
+    print("test - addTaskInSchedule")
+    tbl = "testSchedule"
+    condCol = ["id"]
+    condV = ["id"]
+    dbConn.modMultiVals()
+
+def getPathInfo():
+    print("test - getPathInfo")
+    flds = ["id", "priority"]
+    skips = ["invalid"]
+    paths = [1528,1529,96329,123123123,61799]
+    rslt = schedule.getPathInfo(flds, skips, paths)
+    print (rslt)
+
+def allignQstnPath():
+    print("test - allignQstnPath")
+    tmpPaths = [1, 2, 3, 4, 5]
+    tmpPairs=[(6,1),(7,1),(8,2),(9,3)]
+    rslt = schedule.allignQstnPath(tmpPaths, tmpPairs)
+    print (rslt)
+
+def getNewPaths():
+    print("test - getNewPaths")
+    tmpPathIds = [96329, 2625,50635,71078]
+    rslt = schedule.getNewPaths("5731520200708080941", tmpPathIds)
+    print(rslt)
+
+def rand1():
+    print("test - rand1")
+    tmpa = {"a": "one", "b": "two", "c": "three"}
+    for i in tmpa:
+        print(i)
+
+
+def mkPathInput():
+    print("test - mkPathInput")
+    # tmpTask = {
+    #     "question_id": 58419,
+    #     "jira": {"questions": ["QUES-12888"]},
+    #     "skipStatuses": ["invalid"]}
+    tmpTask = {
+        "question_id": 16942,
+        "jira": {"paths": [1528,1529,96329]},
+        "skipStatuses": ["invalid"]}
+    rslt = schedule.mkPathInput(tmpTask)
+    print(rslt)
+
+
+def rand():
+    print("test - rand")
+    tmpData = [(1, None,), (2, None)]
+    rslt = dbConn.mkObjs(["path_id", "priority"], tmpData)
+    print(rslt)
+
+
+def getQstnIds():
+    print("test - getQstnIds")
+    rslt = dbConn.getQstnIds([68983, 89661, 24593, -1])
+    print(rslt)
+
+
+def pathsToTestPath():
+    print("test - pathsToTestPath")
+    # {"paths":[96329, 68983, 89661, 24593, 100, 2625]}
+    pathFlds = ["id", "priority"]
+    dataTask = {'id': 1, 'name': '5731520200708080941', 'jira': {"paths": [100, 2625, 50635, 71079, 5853]}, 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': [
+        "invalid"], 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
+    rslt = schedule.pathsToTestPath(dataTask, dataTask["jira"]["paths"])
+    print(rslt)
+
+
+def getPaths():
+    print("test - getPaths")
+    pathFlds = ["id", "priority"]
+    dataIds = [96329, 68983, 89661, 24593, -1]
+    rslt = dbConn.getPaths(pathFlds, dataIds)
+    print(rslt)
+
 
 def next():
     print("test - next")
-    task.modStts(1, "pending",["msg"],[""])
+    task.modStts(1, "pending", ["msg"], [""])
     aTask = task.next()
-    print (aTask)
+    print(aTask)
+
 
 def scheduleByQstn():
     print("test - scheduleByQstn")
+    # '{"questions":["QUES-6018","QUES-1","QUES-6019","QUES-12863"]}'
+
     # dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
-    dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"questions":["QUES-6018","QUES-1","QUES-6019","QUES-12863"]}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
+    dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"questions":["QUES-6018","QUES-12863"]}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending',
+               'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
     dataTask = dataRaw
     dataTask["jira"] = json.loads(dataRaw["jira"])
     dataTask["skipStatuses"] = json.loads(dataRaw["skipStatuses"])
     schedule.task(dataTask)
 
+
 def summarizeQstn():
     print("test - summarizeQstn")
-    task.modStts(1, "pending",["msg"],[""])
+    task.modStts(1, "pending", ["msg"], [""])
     aTask = task.next()
     tbl = "testSchedule"
     data = [
@@ -50,13 +190,14 @@ def summarizeQstn():
 
 
 def scheduleTask1():
-    task.modStts(1, "pending",["msg"],[""])
+    task.modStts(1, "pending", ["msg"], [""])
     aTask = task.next()
     schedule.task(aTask)
 
+
 def mkTestPath():
     print("test - mkTestPath")
-    task.modStts(1, "pending",["msg"],[""])
+    task.modStts(1, "pending", ["msg"], [""])
     aTask = task.next()
     dataQstnId = 58419
     pathFlds = ["id", "priority"]
@@ -68,37 +209,41 @@ def mkTestPath():
     )
     # print (dataPaths)
     rslt = schedule.mkTestPath(aTask, dataQstnId, dataPaths)
-    print (rslt)
+    print(rslt)
+
 
 def handleQuestion():
     print("test - handleQuestion")
     tmpTask = {'id': 1, 'name': '5731520200708080941',
-    'jira': {"questions": ["QUES-1", "QUES2", "QUES-1234", "3"]}, 'author': 'evan'}
+               'jira': {"questions": ["QUES-1", "QUES2", "QUES-1234", "3"]}, 'author': 'evan'}
 
     rslt = schedule.handleQuestion(tmpTask)
-    print (rslt)
+    print(rslt)
 
 
 def getUnq():
     print("getUnq")
     tmpData = {'id': 1, 'name': '5731520200708080941',
-    'jira': '{"questions":[1,2,3,4]}', 'author': 'evan'}
+               'jira': '{"questions":[1,2,3,4]}', 'author': 'evan'}
     qstnIds = json.loads(tmpData["jira"])
 
     rslt = dbConn.getUnq(qstnIds["questions"])
-    print (rslt)
+    print(rslt)
+
 
 def handleJira():
-    task.modStts(1, "pending",["msg"],[""])
+    task.modStts(1, "pending", ["msg"], [""])
     aTask = task.next()
     rslt = schedule.handleJira(aTask)
-    print ("handleJira:", rslt)
+    print("handleJira:", rslt)
+
 
 def jiraProcess():
-    task.modStts(1, "pending",["msg"],[""])
+    task.modStts(1, "pending", ["msg"], [""])
     aTask = task.next()
     rslt = jira.process(aTask)
     print("jiraProcess:", rslt)
+
 
 def processReq():
     print("test - processReq")
@@ -114,8 +259,9 @@ def processReq():
 
 def modStts():
     task.modStts(1, "testing",
-    ["msg", "started"],
-    ["testing msg", datetime.utcnow()])
+                 ["msg", "started"],
+                 ["testing msg", datetime.utcnow()])
+
 
 def jiraSearch():
     aTask = task.next()
@@ -123,23 +269,28 @@ def jiraSearch():
     jqlRslt = jira.search(req)
     print("jiraSearch:", jqlRslt)
 
+
 def nextTask():
     rslt = task.next()
     print("nextTask:", rslt)
+
 
 def getGitHash():
     aTask = {"gitBranch": "dev", "gitHash": "x"}
     try:
         repo.getGitHash(aTask)
     except gitdb.exc.BadName as err:
-         print("test-getGitHash: Invalid gitHash: {}".format(
-             aTask["gitHash"]))
+        print("test-getGitHash: Invalid gitHash: {}".format(
+            aTask["gitHash"]))
+
 
 def clearRefs():
     repo.clearRefs()
 
+
 def validateBranchQ():
-    aTask = {"gitBranch": "tmp20210218_01", "gitHash": "3bda78e37a0d3447d67b311082ca224815b738bb"}
+    aTask = {"gitBranch": "tmp20210218_01",
+             "gitHash": "3bda78e37a0d3447d67b311082ca224815b738bb"}
 
     print("validateBranchQ - {branch}: {rslt}".format(
         branch=aTask["gitBranch"], rslt=repo.validateBranchQ(aTask)
@@ -261,23 +412,6 @@ def qstnToTestPath():
 
     tmp = schedule.qstnToTestPath(info, settings)
     print(tmp)
-
-
-def rmExistingPaths():
-    keysCond = ['name', 'path_id']
-    data = [
-        {"name": "5731520200708080941", "path_id": 61637, "question_id": 58418},
-        {"name": "5731520200708080941", "path_id": 62193, "question_id": 58418},
-        {"name": "5731520200708080941", "path_id": 62739, "question_id": 58418},
-        {"name": "5731520200708080941", "path_id": 63285, "question_id": 58418},
-        {"name": "5731520200708080941", "path_id": 70247, "question_id": 58418},
-    ]
-    # data = [
-    #     {"name":"5731520200708080941", "path_id":1, "question_id":2}
-    # ]
-
-    tmp = schedule.rmExistingPaths(keysCond, data)
-    print("none-existing", tmp)
 
 
 def scheduleTask():

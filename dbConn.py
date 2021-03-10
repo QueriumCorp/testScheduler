@@ -118,7 +118,7 @@ def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1"):
 # Get paths in a question
 # parameters:
 # identifier: unq or id of a question
-# statuses: a list of path status to get
+# statuses: a list of path status to skip
 # colsRtrn: a list of fields to be returned
 # [fltr]: additional query attributes
 # [flat]: flatten the result
@@ -244,3 +244,86 @@ def getUnq(qstnIds, flat=True):
     rslt = exec(sql)
 
     return [item[0] for item in rslt] if flat else rslt
+
+
+#######################################
+# Get path ids and with their priority
+# parameters:
+#######################################
+def getPaths(flds, ids, skipStatus=[]):
+    tbl = "path"
+    stts = "\"" + "\",\"".join(skipStatus) + "\""
+
+    "select id,priority from path where status not in ('xx', 'yy') and id in (3,4)"
+
+    # Build a sql query for inserting multiple rows
+    rtrnFlds = ",".join(flds)
+    sqlIds = ",".join(list(map(lambda x: str(x), ids)))
+    sqlStts = "" if len(skipStatus) == 0 else \
+        "status NOT IN ({stts}) AND ".format(stts=stts)
+    sql = "SELECT {rtrn} FROM {tbl} WHERE {sqlStts} id IN ({ids})".format(
+        rtrn=rtrnFlds, tbl=tbl, sqlStts=sqlStts, ids=sqlIds)
+    logging.debug("getUnq - sql: {sql}".format(sql=sql))
+    rslt = exec(sql)
+
+    return rslt
+
+#######################################
+# Get question ids of path ids
+#######################################
+def getQstnIds(pathIds):
+    tbl = "question_path"
+    flds = ["question_id", "path_id"]
+    # Build a sql query for inserting multiple rows
+    rtrnFlds = ",".join(flds)
+    sqlIds = ",".join(list(map(lambda x: str(x), pathIds)))
+    sql = "SELECT {rtrn} FROM {tbl} WHERE path_id IN ({ids})".format(
+        rtrn=rtrnFlds, tbl=tbl, ids=sqlIds)
+    # print(sql)
+    rslt = exec(sql)
+
+    return rslt
+
+
+#######################################
+# Add a row in testSchedule
+# parameters:
+# A dictionaries. The dictionary keys are fields in testSchedule.
+# NOTE: some keys may not be valid fields, so extract only field keys from dict
+# Example:
+# addTestSchedule({"name": "test", "author": "eb", etc})
+#######################################
+def addTestSchedule(dataRow):
+    tbl = "testSchedule"
+    # Get only valid field keys in dataRow because dataRow may contain keys that
+    # are not valid fields in testPath.
+    keys = set(getFields(tbl)).intersection(set(dataRow.keys()))
+
+    # Build a sql query for inserting multiple rows
+    sqlKeys = ",".join(keys)
+    sqlPh = ",".join(["%s"]*len(keys))
+    sqlVals = [dataRow[k] for k in keys]
+    sql = "INSERT INTO {tbl} ({sqlKeys}) VALUES ({sqlPh})".format(
+        tbl=tbl, sqlKeys=sqlKeys, sqlPh=sqlPh)
+    logging.debug("testSchedule - sql: {sql}".format(sql=sql))
+    # print("testSchedule - sqlVals: {sqlVals}".format(
+        # sqlVals=tuple(sqlVals)))
+
+    exec(sql, cmd="commit", vals=tuple(sqlVals))
+
+
+#######################################
+# Get path_id with the given name
+#######################################
+def pathInTestPath(name, flat=True):
+    tbl = "testPath"
+    flds = ["path_id"]
+    # Build a sql query for inserting multiple rows
+    rtrnFlds = ",".join(flds)
+    sql = "SELECT {rtrn} FROM {tbl} WHERE name='{name}'".format(
+        rtrn=rtrnFlds, tbl=tbl, name=name)
+    logging.debug("pathInTask-sql: {}".format(sql))
+    rslt = exec(sql)
+
+    return [item[0] for item in rslt] if flat else rslt
+
