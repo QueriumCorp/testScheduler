@@ -26,7 +26,7 @@ def pathInTask():
     print(rslt)
 
 def testTask():
-    task.modStts(3, "pending", ["msg"], [""])
+    task.modStts(4, "pending", ["msg"], [""])
     aTask = task.next()
     schedule.task(aTask)
 

@@ -294,27 +294,20 @@ def qstnToTestPath(aTask, unq):
     qstnId = qstnData[0][0]
     newTask = aTask
     newTask["question_id"] = qstnId
-    pathInfo = mkPathInput(newTask)
 
+    rslt = pathsToTestPath(newTask)
+    return rslt
+
+    # pathInfo = mkPathInput(newTask)
     # If the number of paths is larger than the limit, sample the paths
-    if "limitPaths" in newTask and newTask["limitPaths"] != -1:
-        if len(pathInfo) > newTask["limitPaths"]:
-            cntOld = len(pathInfo)
-            pathInfo = random.sample(pathInfo, newTask["limitPaths"])
-            logging.info("Sampled the paths from {cntOld} to {cntNew}".format(
-                cntOld=cntOld, cntNew=len(pathInfo)))
+    # if "limitPaths" in newTask and newTask["limitPaths"] != -1:
+    #     if len(pathInfo) > newTask["limitPaths"]:
+    #         cntOld = len(pathInfo)
+    #         pathInfo = random.sample(pathInfo, newTask["limitPaths"])
+    #         logging.info("Sampled the paths from {cntOld} to {cntNew}".format(
+    #             cntOld=cntOld, cntNew=len(pathInfo)))
+    # return mkTestPath(aTask, pathInfo)
 
-    return mkTestPath(aTask, pathInfo)
-
-    # pathFlds = ["id", "priority"]
-    # paths = dbConn.getPathsInQstn(
-    #     qstnId,
-    #     aTask["skipStatuses"],
-    #     pathFlds,
-    #     flat=False
-    # )
-    # logging.info("Total number of paths: {}".format(len(paths)))
-    # return mkTestPath(aTask, qstnId, paths)
 
 #######################################
 # Add questions in testPath
@@ -340,12 +333,30 @@ def qstnsToTestPath(aTask, qstns):
     return result
 
 #######################################
+# Sample the paths
+#######################################
+def sampleQ(aTask, pathCount):
+    if "limitPaths" not in aTask:
+        return False
+
+    if aTask["limitPaths"] == -1:
+        return False
+
+    reqType = getScheduleType(aTask["jira"])
+    if reqType == "path":
+        return False
+
+    if pathCount > aTask["limitPaths"]:
+        return True
+
+    return False
+
+#######################################
 # Add paths in testPath
 #######################################
-def pathsToTestPath(aTask, pathIds):
+def pathsToTestPath(aTask):
 
-    # Get {question_id, path_id, priority} fields of each path in the task
-    # request
+    # Create a list of {question_id, path_id, priority} for each path
     pathInfo = mkPathInput(aTask)
     logging.debug("pathsToTestPath-pathInfo: {}".format(pathInfo))
 
@@ -353,7 +364,15 @@ def pathsToTestPath(aTask, pathIds):
     allPaths = list(map(lambda x: x["path_id"], pathInfo))
     newPaths = getNewPaths(aTask["name"], allPaths)
     newInfo = list(filter(lambda x: x["path_id"] in newPaths, pathInfo))
-    logging.debug("pathsToTestPath-newInfo: {}".format(newInfo))
+
+    # Sample the paths for scheduling based on jira and questions
+    oldCnt = len(newInfo)
+    if sampleQ(aTask, oldCnt):
+        newInfo = random.sample(newInfo, aTask["limitPaths"])
+        logging.info("Sampled the paths from {oldCnt} to {newCnt}".format(
+                oldCnt=oldCnt, newCnt=aTask["limitPaths"]))
+
+    # logging.info("New paths to testPath: {}".format(len(newInfo)))
 
     # Add the new paths in testPath
     rslt = mkTestPath(aTask, newInfo)
@@ -467,8 +486,6 @@ def processReq(aTask):
 # Summarize the result
 #######################################
 def summarizeQstn(tbl, aTask, data):
-    logging.info("Task {id} was scheduled".format(
-        id=aTask["id"], task=aTask["name"]))
     successQstns = list(filter(lambda x: x["status"] == True, data))
     successUnqs = list(map(lambda x: x["unq"], successQstns))
     logging.info("Questions scheduled: {}".format(len(successUnqs)))
@@ -510,8 +527,6 @@ def summarizeQstn(tbl, aTask, data):
 # Summarize the result based on scheduling by path IDs
 #######################################
 def summarizePath(tbl, aTask, data):
-    logging.info("Task {id} was scheduled".format(
-        id=aTask["id"], task=aTask["name"]))
     # Updated the status on the fail case
     if not data["status"]:
         dbConn.modMultiVals(
@@ -537,6 +552,9 @@ def summarizePath(tbl, aTask, data):
 def task(aTask):
     tbl = "testSchedule"
 
+    logging.info("Task {id} ({name}) --- Start".format(
+        id=aTask["id"], name=aTask["name"]))
+
     # Add questions in testPath
     rsltReq = processReq(aTask)
     logging.debug("task-rsltReq: {}".format(rsltReq))
@@ -546,5 +564,8 @@ def task(aTask):
         rslt = qstnsToTestPath(aTask, rsltReq["result"])
         summarizeQstn(tbl, aTask, rslt)
     elif rsltReq["reqType"] == "path":
-        rslt = pathsToTestPath(aTask, rsltReq["result"])
+        rslt = pathsToTestPath(aTask)
         summarizePath(tbl, aTask, rslt)
+
+    logging.info("Task {id} ({name}) --- Finish".format(
+        id=aTask["id"], name=aTask["name"]))
