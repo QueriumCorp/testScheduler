@@ -298,16 +298,6 @@ def qstnToTestPath(aTask, unq):
     rslt = pathsToTestPath(newTask)
     return rslt
 
-    # pathInfo = mkPathInput(newTask)
-    # If the number of paths is larger than the limit, sample the paths
-    # if "limitPaths" in newTask and newTask["limitPaths"] != -1:
-    #     if len(pathInfo) > newTask["limitPaths"]:
-    #         cntOld = len(pathInfo)
-    #         pathInfo = random.sample(pathInfo, newTask["limitPaths"])
-    #         logging.info("Sampled the paths from {cntOld} to {cntNew}".format(
-    #             cntOld=cntOld, cntNew=len(pathInfo)))
-    # return mkTestPath(aTask, pathInfo)
-
 
 #######################################
 # Add questions in testPath
@@ -371,8 +361,6 @@ def pathsToTestPath(aTask):
         newInfo = random.sample(newInfo, aTask["limitPaths"])
         logging.info("Sampled the paths from {oldCnt} to {newCnt}".format(
                 oldCnt=oldCnt, newCnt=aTask["limitPaths"]))
-
-    # logging.info("New paths to testPath: {}".format(len(newInfo)))
 
     # Add the new paths in testPath
     rslt = mkTestPath(aTask, newInfo)
