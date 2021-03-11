@@ -51,9 +51,9 @@ logging.basicConfig(
 #
 #######################################
 def testing():
-    test.testTask()
+    # test.testTask()
     # test.pathInTask()
-    # test.addTestSchedule()
+    test.addTestSchedule()
     # test.scheduleByQstn()
     # test.pathsToTestPath()
     # test.mkPathInput()
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         try:
             aTask = task.next()
             if len(aTask) < 1:
-                logging.info("No pending tasks: sleeping")
+                logging.debug("No pending tasks: sleeping")
                 time.sleep(int(os.environ.get('sleepTime')))
                 continue
             ## Update status to running
