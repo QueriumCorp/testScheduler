@@ -1,5 +1,0 @@
-{
-    "jql": "project = QUES AND Labels = CSULAWeek01",
-    "fields":["key"],
-    "fileOut": "/Users/evan/Documents/work/querium/coding/python/testScheduler/bck/jqlOutput.json"
-}

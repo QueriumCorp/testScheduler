@@ -30,7 +30,7 @@ def mkName():
 def defaultSettings(purpose, settings, skip=[]):
     if purpose == "testPath":
         result = {
-            "name": mkName(),
+            "schedule_id": None,
             "question_id": -1,
             "path_id": -1,
             "trace_id": -1,
@@ -97,21 +97,11 @@ def mkDict(dataA, dataB):
 #######################################
 # Remove path IDs that are already exists in the testPath table.
 #######################################
-def getNewPaths(testName, pathIds):
+def getNewPaths(scheduleId, pathIds):
     pathIdsInData = set(pathIds)
 
-    # Build a sql query for select
-    tbl = "testPath"
-    getFlds = ['path_id']
-    sqlRtrn = ",".join(getFlds)
-    sqlCond = "WHERE name='{name}'".format(name=testName)
-    sql = "SELECT {sqlRtrn} FROM {tbl} {sqlCond}".format(
-        sqlRtrn=sqlRtrn, tbl=tbl, sqlCond=sqlCond)
-    logging.debug("getNewPaths-sql: {}".format(sql))
-
-    pathIdsInDb = dbConn.fetchallQuery(
-        sql, [], fldsRtrn=getFlds, mkObjQ=False)
-    pathIdsInDb = set([item[0] for item in pathIdsInDb])
+    # Get all path IDs of the schedule ID in the testPath table
+    pathIdsInDb = dbConn.pathsInSchedule(scheduleId)
 
     newPathIds = pathIdsInData.difference(pathIdsInDb)
     return list(newPathIds)
@@ -134,6 +124,7 @@ def mkTestPath(aTask, data):
     dbData = []
     for pathInfo in data:
         pathRow = defaultSettings(tbl, aTask, skipFields)
+        pathRow["schedule_id"] = aTask["id"]
         for k in pathInfo:
             if k in pathRow:
                 pathRow[k] = pathInfo[k]
@@ -352,7 +343,7 @@ def pathsToTestPath(aTask):
 
     # Remove any path_id(s) that are already in testPath under task["name"]
     allPaths = list(map(lambda x: x["path_id"], pathInfo))
-    newPaths = getNewPaths(aTask["name"], allPaths)
+    newPaths = getNewPaths(aTask["id"], allPaths)
     newInfo = list(filter(lambda x: x["path_id"] in newPaths, pathInfo))
 
     # Sample the paths for scheduling based on jira and questions
