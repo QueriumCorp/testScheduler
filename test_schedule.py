@@ -1,0 +1,94 @@
+###############################################################################
+# test.py
+# Testing module
+###############################################################################
+import logging
+from mysql.connector import errorcode
+import mysql.connector
+import task
+import repo
+import json
+from datetime import datetime
+import schedule
+import dbConn
+from urllib.parse import urlencode
+import os
+import jql
+import input
+import jira
+import util
+from dotenv import load_dotenv
+load_dotenv()
+logging.basicConfig(level=logging.DEBUG)
+
+
+def template():
+    rslt = "template"
+    print("rslt:")
+    print(rslt)
+
+
+def processReq():
+    task.modStts(4, "pending", ["msg"], [""])
+    aTask = task.next()
+    rslt = schedule.processReq(aTask)
+    print("rslt:")
+    print(rslt)
+
+
+def qstnsToTestPath():
+    task.modStts(4, "pending", ["msg"], [""])
+    aTask = task.next()
+    rsltReq = schedule.processReq(aTask)
+    rslt = schedule.qstnsToTestPath(aTask, rsltReq["result"])
+    print("rslt:")
+    print(rslt)
+
+
+def mkPathInput():
+    task.modStts(4, "pending", ["msg"], [""])
+    aTask = task.next()
+    rslt = schedule.mkPathInput(aTask)
+    print("rslt:")
+    print(rslt)
+
+
+def getNewPaths():
+    task.modStts(4, "pending", ["msg"], [""])
+    aTask = task.next()
+    pathInfo = schedule.mkPathInput(aTask)
+    allPaths = list(map(lambda x: x["path_id"], pathInfo))
+    rslt = schedule.getNewPaths(aTask["id"], allPaths)
+    print("rslt:")
+    print(rslt)
+
+
+def defaultSettings():
+    task.modStts(4, "pending", ["msg"], [""])
+    aTask = task.next()
+    print ("aTask:", aTask)
+    tbl = "testPath"
+    skipFields = ["msg"]
+    rslt = schedule.defaultSettings(tbl, aTask, skipFields)
+    print(rslt)
+
+def mkTestPath():
+    task.modStts(4, "pending", ["msg"], [""])
+    aTask = task.next()
+    pathInfo = schedule.mkPathInput(aTask)
+    allPaths = list(map(lambda x: x["path_id"], pathInfo))
+    newPaths = schedule.getNewPaths(aTask["id"], allPaths)
+    newInfo = list(filter(lambda x: x["path_id"] in newPaths, pathInfo))
+    rslt = schedule.mkTestPath(aTask, newInfo)
+
+    print("rslt:")
+    print(rslt)
+
+
+if __name__ == '__main__':
+    mkTestPath()
+    # defaultSettings()
+    # getNewPaths()
+    # mkPathInput()
+    # qstnsToTestPath()
+    # processReq()

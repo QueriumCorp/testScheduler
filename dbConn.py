@@ -44,7 +44,7 @@ def getFields(tbl):
             "ruleMatchTimeOutTime", "msg", "jiraResp", "started", "finished", "created"
         ],
         "testPath": [
-            "name", "question_id", "path_id", "trace_id", "diff_id", "author",
+            "schedule_id", "question_id", "path_id", "trace_id", "diff_id", "author",
             "gradeStyle", "policies", "status", "ref_id", "priority",
             "limitPathTime", "pid", "stepCount", "stepsCompleted", "timeCompleted",
             "host", "gitBranch", "gitHash", "mmaVersion", "timeOutTime",
@@ -313,17 +313,17 @@ def addTestSchedule(dataRow):
 
 
 #######################################
-# Get path_id with the given name
+# Get path_id with the given schedule_id
 #######################################
-def pathInTestPath(name, flat=True):
+def pathsInSchedule(scheduleId, flat=True):
     tbl = "testPath"
     flds = ["path_id"]
     # Build a sql query for inserting multiple rows
     rtrnFlds = ",".join(flds)
-    sql = "SELECT {rtrn} FROM {tbl} WHERE name='{name}'".format(
-        rtrn=rtrnFlds, tbl=tbl, name=name)
+    sql = "SELECT {rtrn} FROM {tbl} WHERE schedule_id=%s".format(
+        rtrn=rtrnFlds, tbl=tbl)
     logging.debug("pathInTask-sql: {}".format(sql))
-    rslt = exec(sql)
+    rslt = exec(sql, vals=(scheduleId, ))
 
     return [item[0] for item in rslt] if flat else rslt
 
