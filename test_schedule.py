@@ -1,6 +1,6 @@
 ###############################################################################
-# test.py
-# Testing module
+# To run
+# python3 test_schedule.py
 ###############################################################################
 import logging
 from mysql.connector import errorcode
@@ -84,9 +84,26 @@ def mkTestPath():
     print("rslt:")
     print(rslt)
 
+def multiUnq():
+    aRow = dbConn.getRow(
+        "testSchedule", ["id"], [11],
+        dbConn.getFields("testSchedule"))
+    aTaskS = dbConn.mkObj(dbConn.getFields("testSchedule"), aRow[0])
+    aTaskS["jira"] = json.loads(aTaskS["jira"])
+    aTaskS["skipStatuses"] = json.loads(aTaskS["skipStatuses"])
+    # print(aTaskS)
+    rsltProc = schedule.processReq(aTaskS)
+    qstns = rsltProc["result"]
+    # print(qstns)
+    for unq in qstns:
+        qstnData = dbConn.getRow("question", ["unq"], [unq], ["id"], fltr="")
+
+    # print("rslt:")
+    # print(rslt)
 
 if __name__ == '__main__':
-    mkTestPath()
+    multiUnq()
+    # mkTestPath()
     # defaultSettings()
     # getNewPaths()
     # mkPathInput()
