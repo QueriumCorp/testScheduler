@@ -302,11 +302,8 @@ def qstnsToTestPath(aTask, qstns):
         return {"status": True, "result": 0}
     logging.info("Question count: {}".format(len(qstns)))
     result = []
-    testCnt = 1
+
     for qstnUnq in qstns:
-        if testCnt > 4:
-            break
-        testCnt += 1
         rsltQstn = qstnToTestPath(aTask, qstnUnq)
         rsltQstn["unq"] = qstnUnq
         result.append(rsltQstn)
