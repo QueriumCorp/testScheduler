@@ -106,7 +106,7 @@ def exec(query, cmd="fetchall", vals=tuple()):
 # colsRtrn: a list of fields to be returned
 # [fltr]: additional query attributes
 #######################################
-def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1"):
+def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1", mkObjQ=False):
     sqlRtrn = ",".join(colsRtrn)
     sqlCond = "=%s AND ".join(cols) + "=%s "
     sql = "SELECT {flds} FROM {tbl} WHERE {cond} {fltr};".format(
@@ -114,7 +114,7 @@ def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1"):
     logging.debug("getRow-sql: {}".format(sql))
 
     rslt = exec(sql, vals=tuple(vals))
-    return rslt
+    return mkObjs(colsRtrn, rslt) if mkObjQ else rslt
 
 #######################################
 # Get paths in a question
