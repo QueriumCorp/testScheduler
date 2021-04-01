@@ -304,7 +304,7 @@ def addTestSchedule(dataRow):
     # Build a sql query for inserting multiple rows
     sqlKeys = ",".join(keys)
     sqlPh = ",".join(["%s"]*len(keys))
-    sqlVals = [dataRow[k] for k in keys]
+    sqlVals = [json.dumps(dataRow[k]) if type(dataRow[k]) is list or type(dataRow[k]) is dict else dataRow[k] for k in keys]
     sql = "INSERT INTO {tbl} ({sqlKeys}) VALUES ({sqlPh})".format(
         tbl=tbl, sqlKeys=sqlKeys, sqlPh=sqlPh)
     logging.debug("testSchedule - sql: {sql}".format(sql=sql))
