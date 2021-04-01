@@ -40,8 +40,10 @@ def getFields(tbl):
     switcher = {
         "testSchedule": [
             "id", "name", "jira", "author", "gradeStyle", "policies", "skipStatuses",
-            "status", "limitPaths", "priority", "limitPathTime", "host", "pid", "gitBranch", "gitHash", "mmaVersion", "timeOutTime",
-            "ruleMatchTimeOutTime", "msg", "jiraResp", "started", "finished", "created"
+            "status", "limitPaths", "priority", "limitPathTime",
+            "host", "pid", "gitBranch", "gitHash", "mmaVersion",
+            "timeOutTime", "msg", "jiraResp", "rrule",
+            "started", "finished", "created"
         ],
         "testPath": [
             "schedule_id", "question_id", "path_id", "trace_id", "diff_id", "author",
