@@ -33,6 +33,7 @@ import logging
 import task
 import schedule
 import repo
+import recurrence
 import git
 import gitdb
 from datetime import datetime
@@ -108,6 +109,8 @@ if __name__ == '__main__':
     ### Get next task
     terminateQ = False
     while not terminateQ:
+        # Schedule any recurring tests
+        recurrence.scheduleByRecurrence()
         try:
             aTask = task.next()
             if len(aTask) < 1:
