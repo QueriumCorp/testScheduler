@@ -92,6 +92,7 @@ def exec(query, cmd="fetchall", vals=tuple()):
             print("Database does not exist")
         else:
             print(err)
+        raise
     finally:
         conn.close()
 
@@ -329,3 +330,12 @@ def pathsInSchedule(scheduleId, flat=True):
 
     return [item[0] for item in rslt] if flat else rslt
 
+#######################################
+# Change a field value
+#######################################
+def modField(tbl, condCol, condVal, setCol, setVal):
+    sql = "UPDATE {tbl} SET {setC}=%s WHERE {condC}=%s;".format(
+        tbl=tbl, setC=setCol, condC=condCol)
+    logging.debug("modField-sql: {}".format(sql))
+
+    exec(sql, cmd = "commit", vals=(setVal, condVal))
