@@ -1,6 +1,7 @@
 ###############################################################################
-# test.py
 # Testing module
+# To run
+# python3 test_recurrence.py
 ###############################################################################
 import logging
 import recurrence
@@ -37,17 +38,16 @@ def timeToSec():
     print (rslt)
 
 def timeToRunQ():
-    data = {
-        "rrule": "FREQ=DAILY;COUNT=10",
-        "created": datetime.datetime(2021, 3, 30, 11, 30, 00)
-    }
-    rule = recurrence.decodeRrule(data["rrule"])
-    rslt = recurrence.timeToRunQ(rule, data["created"],
-        stampNow=datetime.datetime(2021, 3, 31, 11, 34, 59))
+    aSchedule = dbConn.getRow(
+        "testSchedule",
+        ["id"], [18],
+        dbConn.getFields("testSchedule"),
+        fltr="",
+        mkObjQ=True
+    )[0]
+    rule = recurrence.decodeRrule(aSchedule["rrule"])
+    rslt = recurrence.timeToRunQ(rule, aSchedule["created"])
     print(rslt) # True
-    rslt = recurrence.timeToRunQ(rule, data["created"],
-        stampNow=datetime.datetime(2021, 3, 31, 11, 35, 00))
-    print(rslt) # False
 
 def mkScheduleQ():
     # data = {
@@ -111,11 +111,11 @@ def scheduleByRecurrence():
     # )
     # dbConn.addTestSchedule(recSchedule)
 
-    dbConn.modField("testSchedule", "id", 18,
-        "rrule", "FREQ=MONTHLY")
-    dbConn.modField("testSchedule", "id", 18,
-        # "created", datetime.datetime(2021, 3, 25, 14, 46, 00))
-        "created", datetime.datetime(2021, 3, 2, 14, 46, 00))
+    # dbConn.modField("testSchedule", "id", 18,
+    #     "rrule", "FREQ=MONTHLY")
+    # dbConn.modField("testSchedule", "id", 18,
+    #     # "created", datetime.datetime(2021, 3, 25, 14, 46, 00))
+    #     "created", datetime.datetime(2021, 3, 2, 14, 46, 00))
     recurrence.scheduleByRecurrence()
 
 if __name__ == '__main__':

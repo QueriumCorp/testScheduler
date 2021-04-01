@@ -117,6 +117,8 @@ def mkSchedule(aSchedule, stampNow=datetime.datetime.utcnow()):
     if "FREQ" not in rrule:
         raise NameError("rrule is missing: FREQ")
 
+    # logging.debug("created: {}".format(aSchedule["created"]))
+    # logging.debug("now: {}".format(stampNow))
     # Determine if the recurrence is based on time
     if not timeToRunQ(rrule, aSchedule["created"], stampNow=stampNow):
         return {"status": False, "result": "Not the time"}
@@ -149,7 +151,7 @@ def mkSchedule(aSchedule, stampNow=datetime.datetime.utcnow()):
 
             # Add the new schedule in testSchedule
             dbConn.addTestSchedule(newSchedule)
-            return {"status": True, "result": "Scheduled a test based on a recurring schedule: {name}".format(
+            return {"status": True, "result": "Scheduled a test based on the recurring schedule: {name}".format(
                 name=newSchedule["name"]
             )}
         else:
