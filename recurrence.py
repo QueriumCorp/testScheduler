@@ -2,6 +2,8 @@
 # The module is to figure out when to schedule a test based on the reccurence
 # field in the testSchedule table
 ###############################################################################
+from dotenv import load_dotenv
+load_dotenv()
 import os
 import datetime
 import dbConn
@@ -9,6 +11,7 @@ import repo
 import schedule
 import mysql.connector
 import logging
+import time
 
 ###############################################################################
 # Constants
@@ -182,16 +185,23 @@ def scheduleByRecurrence():
     schedules = getRecurringSchedules()
     # logging.debug(schedules)
 
+    sleepQ = False
+    currStamp = datetime.datetime.utcnow()
     for aSchedule in schedules:
-        rslt = mkSchedule(aSchedule)
+        rslt = mkSchedule(aSchedule, stampNow=currStamp)
 
         # Don't want to log bunch of "Not the time" messages
         if "result" in rslt and rslt["result"] in ignoreMsg:
             continue
 
-        logging.info("Processed recurrence schedule: {name}".format(
+        logging.info("Processing recurrence schedule: {name}".format(
             name=aSchedule["name"]))
-        logging.info("{stts}: {msg}".format(
+        logging.info("{stts} - {msg}".format(
             stts="Success" if rslt["status"] else "Fail",
             msg=rslt["result"]
         ))
+        sleepQ |= rslt["status"]
+
+    if sleepQ:
+        logging.debug("Sleep after scheduling a recurring test")
+        time.sleep(int(os.environ.get('sleepTime')))
