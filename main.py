@@ -39,7 +39,6 @@ import gitdb
 from datetime import datetime
 
 # logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.INFO)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s, %(levelname)s: %(message)s')
@@ -48,69 +47,17 @@ logging.basicConfig(
 # Support functions
 ###############################################################################
 
-#######################################
-#
-#######################################
-def testing():
-    # test.testTask()
-    # test.pathInTask()
-    test.addTestSchedule()
-    # test.scheduleByQstn()
-    # test.pathsToTestPath()
-    # test.mkPathInput()
-    # test.getPathInfo()
-    # test.allignQstnPath()
-    # test.getNewPaths()
-    # test.rand1()
-    # test.rand()
-    # test.getQstnIds()
-    # test.getPaths()
-    # test.next()
-    # test.scheduleTask1()
-    # test.summarizeQstn()
-    # test.mkTestPath()
-    # test.handleQuestion()
-    # test.getUnq()
-    # test.handleJira()
-    # test.processReq()
-    # test.jiraProcess()
-    # test.modStts()
-    # test.jiraSearch()
-    # test.nextTask()
-    # test.clearRefs()
-    # test.getGitHash()
-    # test.validateBranchQ()
-    # test.defaultSettings()
-    # test.getRow()
-    # test.taskTest()
-    # test.fetchallQuery()
-    # test.modMultiVals()
-    # test.modTbl()
-    # test.addTestPaths()
-    # test.testMySqlConnector()
-    # test.getPathsInQstn()
-
-    # test.repoTest()
-    # test.modTbl()
-    # test.modMultiVals2()
-    # test.modMultiVals()
-    # test.qstnToTestPath()
-    # test.scheduleTask()
-    sys.exit()
-
 ###############################################################################
 #   Main
 ###############################################################################
 if __name__ == '__main__':
-
-    ### testing components
-    # testing()
 
     ### Get next task
     terminateQ = False
     while not terminateQ:
         # Schedule any recurring tests
         recurrence.scheduleByRecurrence()
+
         try:
             aTask = task.next()
             if len(aTask) < 1:
