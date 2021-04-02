@@ -137,7 +137,7 @@ def validateBranchQ(aTask, remote="origin"):
 #######################################
 def getGitHash(aTask):
     if "gitHash" not in aTask or aTask["gitHash"]=="":
-        raise NameError("Invalid gitHashs")
+        raise NameError("Invalid gitHash")
 
     ## Verify if the gitBranch is valid
     if not validateBranchQ(aTask, remote="origin"):

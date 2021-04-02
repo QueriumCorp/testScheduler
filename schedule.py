@@ -28,8 +28,8 @@ def mkName():
 # Make default settings
 #######################################
 def defaultSettings(purpose, settings, skip=[]):
-    if purpose == "testPath":
-        result = {
+    switcher = {
+        "testPath": {
             "schedule_id": None,
             "question_id": -1,
             "path_id": -1,
@@ -55,7 +55,31 @@ def defaultSettings(purpose, settings, skip=[]):
             "msg": "",
             "started": "1970-01-01 01:00:00",
             "finished": "1970-01-01 01:00:00"
+        },
+        "testSchedule": {
+            "name": "",
+            "jira": "",
+            "author": "maria@querium.com",
+            "gradeStyle": "gradeBasicAlgebra",
+            "policies": "$A1$",
+            "skipStatuses": ["invalid"],
+            "status": "pending",
+            "limitPaths": -1,
+            "limitPathTime": 3600,
+            "host": "0.0.0.0",
+            "pid": -1,
+            "gitBranch": "dev",
+            "gitHash": "latest",
+            "mmaVersion": "11.1",
+            "timeOutTime": 60,
+            "msg": "",
+            "jiraResp": "",
+            "rrule": "",
+            "started": "1970-01-01 01:00:00",
+            "finished": "1970-01-01 01:00:00"
         }
+    }
+    result = switcher.get(purpose, {})
 
     for k in settings:
         if k not in skip:

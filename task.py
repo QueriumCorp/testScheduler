@@ -35,17 +35,17 @@ def next():
     # Get a pending task
     data = dbConn.getRow(
         tbl, [colStts], ["pending"],
-        dbConn.getFields("testSchedule"))
+        dbConn.getFields("testSchedule"), mkObjQ=True)
     if data is None or len(data) < 1:
         return []
 
     # Convert the data into an object
-    rsltObj = dbConn.mkObj(dbConn.getFields("testSchedule"), data[0])
+    rsltObj = data[0]
 
     # Convert json-string values into json
-    if "jira" in rsltObj:
+    if "jira" in rsltObj and rsltObj["jira"].strip() != "":
         rsltObj["jira"] = json.loads(rsltObj["jira"])
-    if "skipStatuses" in rsltObj:
+    if "skipStatuses" in rsltObj and rsltObj["skipStatuses"].strip() != "":
         rsltObj["skipStatuses"] = json.loads(rsltObj["skipStatuses"])
 
     return rsltObj

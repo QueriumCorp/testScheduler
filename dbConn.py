@@ -40,8 +40,10 @@ def getFields(tbl):
     switcher = {
         "testSchedule": [
             "id", "name", "jira", "author", "gradeStyle", "policies", "skipStatuses",
-            "status", "limitPaths", "priority", "limitPathTime", "host", "pid", "gitBranch", "gitHash", "mmaVersion", "timeOutTime",
-            "ruleMatchTimeOutTime", "msg", "jiraResp", "started", "finished", "created"
+            "status", "limitPaths", "priority", "limitPathTime",
+            "host", "pid", "gitBranch", "gitHash", "mmaVersion",
+            "timeOutTime", "msg", "jiraResp", "rrule",
+            "started", "finished", "created"
         ],
         "testPath": [
             "schedule_id", "question_id", "path_id", "trace_id", "diff_id", "author",
@@ -90,6 +92,7 @@ def exec(query, cmd="fetchall", vals=tuple()):
             print("Database does not exist")
         else:
             print(err)
+        raise
     finally:
         conn.close()
 
@@ -104,7 +107,7 @@ def exec(query, cmd="fetchall", vals=tuple()):
 # colsRtrn: a list of fields to be returned
 # [fltr]: additional query attributes
 #######################################
-def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1"):
+def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1", mkObjQ=False):
     sqlRtrn = ",".join(colsRtrn)
     sqlCond = "=%s AND ".join(cols) + "=%s "
     sql = "SELECT {flds} FROM {tbl} WHERE {cond} {fltr};".format(
@@ -112,7 +115,7 @@ def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1"):
     logging.debug("getRow-sql: {}".format(sql))
 
     rslt = exec(sql, vals=tuple(vals))
-    return rslt
+    return mkObjs(colsRtrn, rslt) if mkObjQ else rslt
 
 #######################################
 # Get paths in a question
@@ -302,7 +305,7 @@ def addTestSchedule(dataRow):
     # Build a sql query for inserting multiple rows
     sqlKeys = ",".join(keys)
     sqlPh = ",".join(["%s"]*len(keys))
-    sqlVals = [dataRow[k] for k in keys]
+    sqlVals = [json.dumps(dataRow[k]) if type(dataRow[k]) is list or type(dataRow[k]) is dict else dataRow[k] for k in keys]
     sql = "INSERT INTO {tbl} ({sqlKeys}) VALUES ({sqlPh})".format(
         tbl=tbl, sqlKeys=sqlKeys, sqlPh=sqlPh)
     logging.debug("testSchedule - sql: {sql}".format(sql=sql))
@@ -327,3 +330,12 @@ def pathsInSchedule(scheduleId, flat=True):
 
     return [item[0] for item in rslt] if flat else rslt
 
+#######################################
+# Change a field value
+#######################################
+def modField(tbl, condCol, condVal, setCol, setVal):
+    sql = "UPDATE {tbl} SET {setC}=%s WHERE {condC}=%s;".format(
+        tbl=tbl, setC=setCol, condC=condCol)
+    logging.debug("modField-sql: {}".format(sql))
+
+    exec(sql, cmd = "commit", vals=(setVal, condVal))
