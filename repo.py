@@ -82,7 +82,9 @@ def checkoutRef(repo, aRef):
 def cleanup(repo, branchDel, branchNext="dev"):
     repo.git.checkout(branchNext)
     logging.debug("Checked out: {}".format(branchNext))
-    repo.delete_head(branchDel)
+    # Delete the branch even if it isn't merged into to the main branch 
+    repo.delete_head(branchDel, force=True)
+    
     logging.debug("Deleted: {}".format(branchDel))
 
 ###############################################################################

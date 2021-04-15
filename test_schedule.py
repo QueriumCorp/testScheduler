@@ -73,7 +73,7 @@ def defaultSettings():
     print(rslt)
 
 def mkTestPath():
-    task.modStts(4, "pending", ["msg"], [""])
+    task.modStts(48, "pending", ["msg"], [""])
     aTask = task.next()
     pathInfo = schedule.mkPathInput(aTask)
     allPaths = list(map(lambda x: x["path_id"], pathInfo))
@@ -102,8 +102,8 @@ def multiUnq():
     # print(rslt)
 
 if __name__ == '__main__':
-    multiUnq()
-    # mkTestPath()
+    mkTestPath()
+    # multiUnq()
     # defaultSettings()
     # getNewPaths()
     # mkPathInput()
