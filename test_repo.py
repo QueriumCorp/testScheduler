@@ -28,11 +28,21 @@ def getGitHash():
     print("rslt:")
     print(rslt)
 
-def template():
-    rslt = "template"
-    print("rslt:")
+def getGitHash2():
+    tbl = "testSchedule"
+    id = 48
+    aTask = dbConn.getRow(
+        tbl, ["id"], [id],
+        dbConn.getFields("testSchedule"), mkObjQ=True
+    )[0]
+    print(aTask)
+    print(aTask.keys())
+    print(aTask["gitHash"])
+
+    rslt = repo.getGitHash(aTask)
     print (rslt)
 
 
 if __name__ == '__main__':
-    getGitHash()
+    getGitHash2()
+    # getGitHash()
