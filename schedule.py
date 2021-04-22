@@ -49,7 +49,7 @@ def defaultSettings(purpose, settings, skip=[]):
             "host": "0.0.0.0",
             "gitBranch": "dev",
             "gitHash": "latest",
-            "mmaVersion": "11.1",
+            "mmaVersion": "11.2",
             "timeOutTime": 60,
             "ruleMatchTimeOutTime": 120,
             "msg": "",
@@ -70,7 +70,7 @@ def defaultSettings(purpose, settings, skip=[]):
             "pid": -1,
             "gitBranch": "dev",
             "gitHash": "latest",
-            "mmaVersion": "11.1",
+            "mmaVersion": "11.2",
             "timeOutTime": 60,
             "msg": "",
             "jiraResp": "",
@@ -136,7 +136,7 @@ def getNewPaths(scheduleId, pathIds):
 #######################################
 def mkTestPath(aTask, data):
     tbl = "testPath"
-    skipFields = ["msg"]
+    skipFields = ["msg","started","finished","created","updated"]
 
     if len(data) < 1:
         return {
@@ -379,6 +379,24 @@ def pathsToTestPath(aTask):
     return rslt
 
 #######################################
+# Create test paths based on scheduleId
+#######################################
+def scheduleToTestPath(aTask, pathInfo):
+
+    # Remove any path_id(s) that are already in testPath under task["name"]
+    allPaths = list(map(lambda x: x["path_id"], pathInfo))
+    newPaths = getNewPaths(aTask["id"], allPaths)
+    logging.debug("Paths had already added: {}".format(
+        len(allPaths)-len(newPaths)))
+    newInfo = list(filter(lambda x: x["path_id"] in newPaths, pathInfo))
+
+    # Create the test paths in testPath
+    rslt = mkTestPath(aTask, newInfo)
+    
+    return rslt
+
+
+#######################################
 # Identify the schedule reqType
 # Returns: a string of a schedule reqType
 #######################################
@@ -389,6 +407,8 @@ def getScheduleType(req):
         return "question"
     elif "paths" in req:
         return "path"
+    elif "useScheduleId" in req:
+        return "schedule"
     else:
         return "invalid"
 
@@ -440,6 +460,37 @@ def handlePath(aTask):
     }
 
 #######################################
+# Handle when schedule reqType is schedule ID
+#######################################
+def handleSchedule(aTask):
+    
+    if "useScheduleId" not in aTask["jira"]:
+        return {
+            "status": False,
+            "reslt": "Invalid jira field"
+        }
+        
+    if type(aTask["jira"]["useScheduleId"]) != int:
+        return {
+            "status": False,
+            "reslt": "Invalid schedule ID"
+        }
+
+    # Get test paths of the task
+    rslt = dbConn.getRow(
+        "testPath",
+        ["schedule_id"],
+        [aTask["jira"]["useScheduleId"]],
+        ["question_id", "path_id", "priority"],
+        fltr="", mkObjQ=True
+    )
+
+    return {
+        "status": True,
+        "result": rslt
+    }
+
+#######################################
 # Handle when schedule reqType is invalid
 #######################################
 def handleInvalid(aTask):
@@ -452,7 +503,9 @@ def handleInvalid(aTask):
 
 #######################################
 # Get questions in a schedule request
-# Return: a list of ques IDs: ["QUES-1234", "QUES-1235", etc]
+# Return:
+#  - a list of ques IDs: ["QUES-1234", "QUES-1235", etc]
+#  - a list of path IDs if reqType is path
 #######################################
 def processReq(aTask):
     reqType = getScheduleType(aTask["jira"])
@@ -461,6 +514,7 @@ def processReq(aTask):
         "jira": handleJira,
         "question": handleQuestion,
         "path": handlePath,
+        "schedule": handleSchedule,
         "invalid": handleInvalid
     }
     rslt = handlers[reqType](aTask)
@@ -563,6 +617,9 @@ def task(aTask):
     if rsltReq["reqType"] == "jira" or rsltReq["reqType"] == "question":
         rslt = qstnsToTestPath(aTask, rsltReq["result"])
         summarizeQstn(tbl, aTask, rslt)
+    elif rsltReq["reqType"] == "schedule":
+        rslt = scheduleToTestPath(aTask, rsltReq["result"])
+        summarizePath(tbl, aTask, rslt)
     elif rsltReq["reqType"] == "path":
         rslt = pathsToTestPath(aTask)
         summarizePath(tbl, aTask, rslt)
