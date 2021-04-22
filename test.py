@@ -47,7 +47,7 @@ def addTestSchedule():
     #     "limitPathTime": 600,
     #     "host": "0.0.0.0",
     #     "pid": -1,
-    #     "mmaVersion": "11.1",
+    #     "mmaVersion": "11.2",
     #     "timeOutTime": 60,
     #     "ruleMatchTimeOutTime": 120,
     #     "msg": "",
@@ -68,7 +68,7 @@ def addTestSchedule():
         "limitPathTime": 600,
         "host": "0.0.0.0",
         "pid": -1,
-        "mmaVersion": "11.1",
+        "mmaVersion": "11.2",
         "timeOutTime": 60,
         "ruleMatchTimeOutTime": 120,
         "msg": "",
@@ -143,7 +143,7 @@ def pathsToTestPath():
     # {"paths":[96329, 68983, 89661, 24593, 100, 2625]}
     pathFlds = ["id", "priority"]
     dataTask = {'id': 1, 'name': '5731520200708080941', 'jira': {"paths": [100, 2625, 50635, 71079, 5853]}, 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': [
-        "invalid"], 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
+        "invalid"], 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.2', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
     rslt = schedule.pathsToTestPath(dataTask, dataTask["jira"]["paths"])
     print(rslt)
 
@@ -167,9 +167,9 @@ def scheduleByQstn():
     print("test - scheduleByQstn")
     # '{"questions":["QUES-6018","QUES-1","QUES-6019","QUES-12863"]}'
 
-    # dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
+    # dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.2', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
     dataRaw = {'id': 1, 'name': '5731520200708080941', 'jira': '{"questions":["QUES-6018","QUES-12863"]}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending',
-               'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
+               'limitPaths': 5, 'priority': 1, 'limitPathTime': 600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': '57bdb3bfd4a1dd54c036acb3d4239d3bf67ea2d3', 'mmaVersion': '11.2', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': ''}
     dataTask = dataRaw
     dataTask["jira"] = json.loads(dataRaw["jira"])
     dataTask["skipStatuses"] = json.loads(dataRaw["skipStatuses"])
@@ -408,7 +408,7 @@ def modMultiVals2():
 def qstnToTestPath():
     info = {'key': 'QUES-12879'}
     settings = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending',
-                'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
+                'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.2', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
 
     tmp = schedule.qstnToTestPath(info, settings)
     print(tmp)
@@ -416,10 +416,10 @@ def qstnToTestPath():
 
 def scheduleTask():
     print("schedule - task")
-    # data = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
+    # data = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.2', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
     data = {'id': 1, 'name': '5731520200708080941', 'jira': '{"fields":["key"],"makeFilter": "filterTest4", "qstnType":"StepWise","jql":"project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \\"Mathematica Specification\\" !~ MatchSpec"}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending',
-            'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
-    # data = {'id': 1, 'name': '5731520200708080941', 'jira': '{"useFilter": "filterTest1", "fields":["key"]}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.1', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
+            'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.2', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
+    # data = {'id': 1, 'name': '5731520200708080941', 'jira': '{"useFilter": "filterTest1", "fields":["key"]}', 'author': 'evan', 'gradeStyle': 'gradeBasicAlgebra', 'policies': '$A1$', 'skipStatuses': '["invalid"]', 'status': 'pending', 'limitPaths': -1, 'limitStepTime': 1800, 'limitSteps': -1, 'limitPathTime': 3600, 'host': '0.0.0.0', 'pid': -1, 'gitBranch': 'dev', 'gitHash': 'latest', 'mmaVersion': '11.2', 'timeOutTime': 60, 'ruleMatchTimeOutTime': 120, 'msg': '', 'jiraResp': None, 'started': datetime.datetime(1970, 1, 1, 1, 0), 'finished': datetime.datetime(1970, 1, 1, 1, 0), 'created': datetime.datetime(2020, 7, 8, 13, 9, 48)}
     schedule.task(data)
 
 

@@ -35,6 +35,13 @@ def processReq():
     print("rslt:")
     print(rslt)
 
+def processReq2():
+    task.modStts(55, "pending", ["msg"], [""])
+    aTask = task.next()
+    print(aTask)
+    print(aTask["jira"])
+    rslt = schedule.processReq(aTask)
+    print(rslt)
 
 def qstnsToTestPath():
     task.modStts(4, "pending", ["msg"], [""])
@@ -68,7 +75,7 @@ def defaultSettings():
     aTask = task.next()
     print ("aTask:", aTask)
     tbl = "testPath"
-    skipFields = ["msg"]
+    skipFields = ["msg", "started", "finished"]
     rslt = schedule.defaultSettings(tbl, aTask, skipFields)
     print(rslt)
 
@@ -101,8 +108,26 @@ def multiUnq():
     # print("rslt:")
     # print(rslt)
 
+def handleSchedule():
+    # task.modStts(55, "pending", ["msg"], [""])
+    # aTask = task.next()
+    # aTask = {"jira": {"useScheduleId": "4"}}
+
+    aTask = {"jira": {"useScheduleId": 4}}
+    rslt = schedule.handleSchedule(aTask)
+    print(rslt)
+    
+def runTask():
+    task.modStts(4, "success", ["msg"], [""])
+    task.modStts(56, "pending", ["msg"], [""])
+    aTask = task.next()
+    schedule.task(aTask)
+
 if __name__ == '__main__':
-    mkTestPath()
+    runTask()
+    # processReq2()
+    # handleSchedule()
+    # mkTestPath()
     # multiUnq()
     # defaultSettings()
     # getNewPaths()
