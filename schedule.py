@@ -560,7 +560,7 @@ def summarizeQstn(tbl, aTask, data):
     theMsg = ""
     if theStatus == "fail" or theStatus == "failSome":
         theMsg = json.dumps(
-            {"success": successQstns, "fail": failedQstns},
+            {"success": len(successQstns), "fail": failedQstns},
             separators=(',', ':')
         )
 
