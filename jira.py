@@ -209,15 +209,11 @@ def process(aTask):
 
     # Response of the jql request
     jqlRslt = search(req)
-
+    
     # If jira request fails, update testSchdule and return
     if jqlRslt["status"] == False:
-        dbConn.modMultiVals(
-            tbl,
-            ["id"], aTask["id"],
-            ["status", "finished", "msg"],
-            ["Fail", datetime.now(), jqlRslt["result"]])
-        logging.error("Failed on jira - search: {}".format(jqlRslt['result']))
+        jqlRslt["result"] =  "jira response error: {}".format(jqlRslt["result"])
+        logging.error("Failed on process-search: {}".format(jqlRslt['result']))
         return jqlRslt
 
     # Update testSchedue with the jira result

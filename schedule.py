@@ -321,11 +321,11 @@ def qstnToTestPath(aTask, unq):
 # result: a number of questions are added in testPath
 #######################################
 def qstnsToTestPath(aTask, qstns):
+    result = []
     if len(qstns) < 1:
         logging.info("No question to test")
-        return {"status": True, "result": 0}
+        return result
     logging.info("Question count: {}".format(len(qstns)))
-    result = []
 
     for qstnUnq in qstns:
         rsltQstn = qstnToTestPath(aTask, qstnUnq)
@@ -417,6 +417,11 @@ def getScheduleType(req):
 #######################################
 def handleJira(aTask):
     data = jira.process(aTask)
+
+    # If jira.process fails, return
+    if data["status"] == False:
+        return data
+
     rslt = []
     if data["status"] == True:
         rslt = list(map(lambda x: x["key"], data["keys"]))
@@ -431,15 +436,13 @@ def handleJira(aTask):
 # Handle when schedule reqType is question
 #######################################
 def handleQuestion(aTask):
-    rslt = []
-    if "questions" in aTask["jira"] and len(aTask["jira"]["questions"]) > 0:
-        rsltTmp = aTask["jira"]["questions"]
-        rslt = list(filter(lambda x: "QUES-" in x, rsltTmp))
-        if len(rslt) != len(rsltTmp):
-            logging.warning("Invalid questions: {}".format(
-                set(rsltTmp) - set(rslt)
-            ))
+    if "questions" not in aTask["jira"]:
+        return {
+            "status": False,
+            "result": "Invalid request: {}".format(aTask["jira"])
+        }
 
+    rslt = aTask["jira"]["questions"]
     return {
         "status": True,
         "result": rslt
@@ -519,19 +522,12 @@ def processReq(aTask):
     }
     rslt = handlers[reqType](aTask)
 
-    # If status is fasle, update the status in testSchedule
+    # If the handler's status is false, return
     if rslt["status"] == False:
-        taskModule.modStts(
-            aTask["id"], "fail",
-            ["finished", "msg"],
-            [datetime.utcnow(), rslt["result"]]
-        )
-        return {
-            "reqType": reqType,
-            "result": []
-        }
+        return rslt
 
     return {
+        "status": True,
         "reqType": reqType,
         "result": rslt["result"]
     }
@@ -547,35 +543,34 @@ def summarizeQstn(tbl, aTask, data):
 
     failedQstns = list(filter(lambda x: x["status"] == False, data))
     logging.debug("summarizeQstn - failedQstns: {}".format(failedQstns))
-    if len(failedQstns) == 0:
-        dbConn.modMultiVals(
-            tbl,
-            ["id"], [aTask["id"]],
-            ["status", "finished"],
-            ["success", datetime.utcnow()]
-        )
-    else:
-        logging.warning("Questions failed: {}".format(len(failedQstns)))
-        failedUnqs = []
-        for i in failedQstns:
-            failedUnqs.append(i["unq"])
-            logging.warning("{unq} failed: {msg}".format(
-                unq=i["unq"], msg=i["result"]))
 
-        dbConn.modMultiVals(
-            tbl,
-            ["id"], [aTask["id"]],
-            ["status", "finished", "msg"],
-            [
-                "success" if len(failedQstns) == 0 else "failSome",
-                datetime.utcnow(),
-                json.dumps(
-                    {
-                        "success": successQstns,
-                        "fail": failedQstns
-                    },
-                    separators=(',', ':'))
-            ])
+    # Determine the scheduler status
+    theStatus = ""
+    if len(successQstns) > 0 and len(failedQstns) == 0:
+        theStatus = "success"
+    elif len(successQstns) == 0 and len(failedQstns) > 0:
+        theStatus = "fail"
+        logging.warning("Questions failed: {}".format(len(failedQstns)))
+    elif len(successQstns) > 0 and len(failedQstns) > 0:
+        theStatus = "failSome"
+    else:
+        theStatus = "fail"
+
+    # Determine the scheduler msg
+    theMsg = ""
+    if theStatus == "fail" or theStatus == "failSome":
+        theMsg = json.dumps(
+            {"success": len(successQstns), "fail": failedQstns},
+            separators=(',', ':')
+        )
+
+    # Update the testSchedule table with the result
+    dbConn.modMultiVals(
+        tbl,
+        ["id"], [aTask["id"]],
+        ["status", "msg", "finished"],
+        [theStatus, theMsg, datetime.utcnow()]
+    )
 
 #######################################
 # Summarize the result based on scheduling by path IDs
@@ -612,6 +607,17 @@ def task(aTask):
     # Add questions in testPath
     rsltReq = processReq(aTask)
     logging.debug("task-rsltReq: {}".format(rsltReq))
+
+     # If status is false, update the status in testSchedule
+    if rsltReq["status"] == False:
+        taskModule.modStts(
+            aTask["id"], "fail",
+            ["msg"],
+            [rsltReq["result"]]
+        )
+        logging.error("Failed on processReq in schedule-task: {}".format(
+            rsltReq["result"]))
+        return 
 
     # Add request data in testPath
     if rsltReq["reqType"] == "jira" or rsltReq["reqType"] == "question":

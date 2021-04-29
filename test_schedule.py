@@ -35,22 +35,6 @@ def processReq():
     print("rslt:")
     print(rslt)
 
-def processReq2():
-    task.modStts(55, "pending", ["msg"], [""])
-    aTask = task.next()
-    print(aTask)
-    print(aTask["jira"])
-    rslt = schedule.processReq(aTask)
-    print(rslt)
-
-def qstnsToTestPath():
-    task.modStts(4, "pending", ["msg"], [""])
-    aTask = task.next()
-    rsltReq = schedule.processReq(aTask)
-    rslt = schedule.qstnsToTestPath(aTask, rsltReq["result"])
-    print("rslt:")
-    print(rslt)
-
 
 def mkPathInput():
     task.modStts(4, "pending", ["msg"], [""])
@@ -118,12 +102,32 @@ def handleSchedule():
     print(rslt)
     
 def runTask():
-    task.modStts(4, "success", ["msg"], [""])
-    task.modStts(56, "pending", ["msg"], [""])
+    # task.modStts(4, "success", ["msg"], [""])
+    task.modStts(85, "pending", ["msg"], [""])
     aTask = task.next()
     schedule.task(aTask)
 
+def processReq2():
+    task.modStts(85, "pending", ["msg"], [""])
+    aTask = task.next()
+    print(aTask)
+    print(aTask["jira"])
+    rslt = schedule.processReq(aTask)
+    print(rslt)
+
+
+def qstnsToTestPath():
+    task.modStts(85, "pending", ["msg"], [""])
+    aTask = task.next()
+    rsltReq = schedule.processReq(aTask)
+    print("rsltReq")
+    print(rsltReq)
+    rslt = schedule.qstnsToTestPath(aTask, rsltReq["result"])
+    print("rslt")
+    print(rslt)
+
 if __name__ == '__main__':
+    # qstnsToTestPath()
     runTask()
     # processReq2()
     # handleSchedule()
@@ -132,5 +136,4 @@ if __name__ == '__main__':
     # defaultSettings()
     # getNewPaths()
     # mkPathInput()
-    # qstnsToTestPath()
     # processReq()
