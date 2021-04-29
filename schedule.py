@@ -417,6 +417,11 @@ def getScheduleType(req):
 #######################################
 def handleJira(aTask):
     data = jira.process(aTask)
+
+    # If jira.process fails, return
+    if data["status"] == False:
+        return data
+
     rslt = []
     if data["status"] == True:
         rslt = list(map(lambda x: x["key"], data["keys"]))
@@ -519,19 +524,12 @@ def processReq(aTask):
     }
     rslt = handlers[reqType](aTask)
 
-    # If status is fasle, update the status in testSchedule
+    # If the handler's status is false, return
     if rslt["status"] == False:
-        taskModule.modStts(
-            aTask["id"], "fail",
-            ["finished", "msg"],
-            [datetime.utcnow(), rslt["result"]]
-        )
-        return {
-            "reqType": reqType,
-            "result": []
-        }
+        return rslt
 
     return {
+        "status": True,
         "reqType": reqType,
         "result": rslt["result"]
     }
@@ -612,6 +610,17 @@ def task(aTask):
     # Add questions in testPath
     rsltReq = processReq(aTask)
     logging.debug("task-rsltReq: {}".format(rsltReq))
+
+     # If status is false, update the status in testSchedule
+    if rsltReq["status"] == False:
+        taskModule.modStts(
+            aTask["id"], "fail",
+            ["msg"],
+            [rsltReq["result"]]
+        )
+        logging.error("Failed on processReq in schedule-task: {}".format(
+            rsltReq["result"]))
+        return 
 
     # Add request data in testPath
     if rsltReq["reqType"] == "jira" or rsltReq["reqType"] == "question":
