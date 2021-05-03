@@ -22,7 +22,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 def next():
-    task.modStts(4, "pending", ["msg"], [""])
+    task.modStts(71, "pending", ["msg"], [""])
     rslt = task.next()
     # rslt = schedule.task(aTask)
     print(rslt)

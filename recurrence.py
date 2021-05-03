@@ -56,7 +56,7 @@ def decodeRrule(aRule):
     obj = {}
     for aPart in parts:
         [k, v] = aPart.split("=")
-        obj[k] = v
+        obj[k] = int(v) if k=="INTERVAL" else v
 
     return obj
 
@@ -76,7 +76,12 @@ def timeToRunQ(rrule, createdDt, stampNow=datetime.datetime.utcnow()):
         "monthly": 30,
         "yearly": 365,
     }
+    # Convert the FREQ value into days
     divider = switcher.get(rrule["FREQ"].lower(), 0)
+
+    # Factor in the interval value
+    interval = 1 if "INTERVAL" not in rrule.keys() else rrule["INTERVAL"]
+    divider *= interval
     if divider == 0:
         raise ValueError("Invalid FREQ value")
     dateDiff = stampNow - createdDt
