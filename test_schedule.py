@@ -20,6 +20,7 @@ import util
 from dotenv import load_dotenv
 load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.INFO)
 
 
 def template():

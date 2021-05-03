@@ -39,13 +39,4 @@ def next():
     if data is None or len(data) < 1:
         return []
 
-    # Convert the data into an object
-    rsltObj = data[0]
-
-    # Convert json-string values into json
-    if "jira" in rsltObj and rsltObj["jira"].strip() != "":
-        rsltObj["jira"] = json.loads(rsltObj["jira"])
-    if "skipStatuses" in rsltObj and rsltObj["skipStatuses"].strip() != "":
-        rsltObj["skipStatuses"] = json.loads(rsltObj["skipStatuses"])
-
-    return rsltObj
+    return data[0]

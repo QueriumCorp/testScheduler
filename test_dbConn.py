@@ -38,18 +38,36 @@ def addTestSchedule():
 
     dbConn.addTestSchedule(data)
 
+def mkObjs():
+    table = "testSchedule"
+    keys = ["id", "name", "jira", "skipStatuses", "rrule", "pid"]
+    data = (1, "test", "{\"fields\":[\"key\"], \"qstnType\":\"StepWise\", \"questions\":[\"QUES-12038\",\"QUES-12197\"]}", "[\"a\",\"b\"]", "{\"FREQ\":\"WEEKLY\"}", -1)
+    rslt = dbConn.mkObj(keys, data, table=table)
+    print(rslt)
+    print(rslt["jira"]["questions"])
+    print(rslt["rrule"]["FREQ"])
+
 def getRow():
+    # testFields = dbConn.getFields("testSchedule")[0:3]
+    testFields = dbConn.getFields("testSchedule")
     rslt = dbConn.getRow(
-        "testPath",
-        ["schedule_id"],
-        [524],
-        ["question_id", "path_id", "priority"],
+        "testSchedule",
+        ["id"],
+        [75],
+        testFields,
         fltr="", mkObjQ=True
     )
 
-    print (rslt)
+    print(rslt)
+
+def testJsonFields():
+    tbl = "testSchedule"
+    flds = dbConn.getJsonStringFlds(tbl)
+    print (flds)
 
 if __name__ == '__main__':
-    getRow()
+    # getRow()
+    # testJsonFields()
+    mkObjs()
     # addTestSchedule()
     # pathsInSchedule()

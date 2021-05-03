@@ -21,16 +21,45 @@ load_dotenv()
 ###############################################################################
 # Support functions
 ###############################################################################
+#######################################
+# Get the fields that have value of JSON string
+#######################################
+def getJsonStringFlds(tbl):
+    switcher = {
+        "testSchedule": ["jira", "skipStatuses", "rrule"],
+        "testPath": []
+    }
+
+    return switcher.get(tbl, [])
+
+#######################################
+# 
+#######################################
+def isJsonStringQ(val):
+    if not isinstance(val, str):
+        return False
+    if len(val.strip())<1:
+        return False
+
+    return True
 
 #######################################
 # Make objects
 #######################################
-def mkObj(keys, data):
-    return dict(zip(keys, data))
+def mkObj(keys, data, table="else"):
+    # Length of the keys and data has to be the same
+    assert len(keys) == len(data), logging.error("mkObj: Not the same length")
+
+    # If values of fields are JSON in a string form, convert them to a dict
+    jsonFlds = getJsonStringFlds(table)
+    vals = [json.loads(data[idx]) if keys[idx] in jsonFlds and isJsonStringQ(data[idx]) else data[idx] \
+        for idx in range(len(keys))]
+
+    return dict(zip(keys, vals))
 
 
-def mkObjs(keys, data):
-    return list(map(lambda aRow: dict(zip(keys, aRow)), data))
+def mkObjs(keys, data, table="else"):
+    return list(map(lambda aRow: mkObj(keys, aRow, table=table), data))
 
 
 #######################################
@@ -115,7 +144,7 @@ def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1", mkObjQ=False):
     logging.debug("getRow-sql: {}".format(sql))
 
     rslt = exec(sql, vals=tuple(vals))
-    return mkObjs(colsRtrn, rslt) if mkObjQ else rslt
+    return mkObjs(colsRtrn, rslt, table=tbl) if mkObjQ else rslt
 
 #######################################
 # Get paths in a question
