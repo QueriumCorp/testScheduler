@@ -26,7 +26,8 @@ def template():
 
 def decodeRrule():
     # data = "FREQ=DAILY;"
-    data = "TZID=US-Eastern:19970902T090000;FREQ=WEEKLY;COUNT=10"
+    # data = "TZID=US-Eastern:19970902T090000;FREQ=WEEKLY;COUNT=10"
+    data = "FREQ=WEEKLY;INTERVAL=2"
     rslt = recurrence.decodeRrule(data)
     print(rslt)
 
@@ -40,13 +41,20 @@ def timeToSec():
 def timeToRunQ():
     aSchedule = dbConn.getRow(
         "testSchedule",
-        ["id"], [18],
+        ["id"], [71],
         dbConn.getFields("testSchedule"),
         fltr="",
         mkObjQ=True
     )[0]
+    print ("aSchedule: {}".format(aSchedule))
     rule = recurrence.decodeRrule(aSchedule["rrule"])
-    rslt = recurrence.timeToRunQ(rule, aSchedule["created"])
+    print("rule: {}".format(rule))
+    print("created: {}".format(aSchedule["created"]))
+    # timeNow = datetime.datetime(2021, 5, 3, 14, 10, 20)
+    # timeNow = datetime.datetime(2021, 5, 3, 23, 27, 20)
+    timeNow = datetime.datetime(2021, 5, 12, 14, 9, 20)
+    print("timeNow: {}".format(timeNow))
+    rslt = recurrence.timeToRunQ(rule, aSchedule["created"], stampNow=timeNow)
     print(rslt) # True
 
 def mkScheduleQ():
@@ -119,10 +127,10 @@ def scheduleByRecurrence():
     recurrence.scheduleByRecurrence()
 
 if __name__ == '__main__':
-    scheduleByRecurrence()
+    # scheduleByRecurrence()
     # mkSchedule()
     # testSchedule()
     # mkScheduleQ()
-    # timeToRunQ()
+    timeToRunQ()
     # timeToSec()
     # decodeRrule()

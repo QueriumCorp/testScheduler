@@ -26,7 +26,7 @@ load_dotenv()
 #######################################
 def getJsonStringFlds(tbl):
     switcher = {
-        "testSchedule": ["jira", "skipStatuses", "rrule"],
+        "testSchedule": ["jira", "skipStatuses"],
         "testPath": []
     }
 
