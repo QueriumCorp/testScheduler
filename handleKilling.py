@@ -54,7 +54,9 @@ def processKilling(aTask):
             [aTask["id"]],
             "status", "killed"
         )
-        logging.info("Finished killing task: {}".format(aTask["id"]))
+        logging.info("Finished killing")
+    else:
+        logging.info("Some paths aren't done yet")
 
 
 ###############################################################################
@@ -64,6 +66,6 @@ def softly():
     tasks = getTasksInKilling()
 
     for aTask in tasks:
-        logging.info("handling a task in the killing status: {}".format(
+        logging.info("Handling a task in the killing status: {}".format(
             aTask["id"]))
         processKilling(aTask)
