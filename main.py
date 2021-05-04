@@ -35,6 +35,7 @@ import schedule
 import repo
 import recurrence
 import handleKill
+import handleKilling
 import git
 import gitdb
 from datetime import datetime
@@ -58,6 +59,9 @@ if __name__ == '__main__':
     while not terminateQ:
         # Schedule any recurring tests
         recurrence.scheduleByRecurrence()
+
+        # Handle any tests in "killing" status
+        handleKilling.softly()
 
         # Handle any tests in "kill" status
         handleKill.doIt()
