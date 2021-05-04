@@ -115,6 +115,79 @@ def mkScheduleQ(aSchedule, aHash):
     return False
 
 #######################################
+# Jira field has paths
+#######################################
+def jiraGotPathsQ(aSchedule):
+    if "jira" not in aSchedule:
+        return False
+    if "paths" not in aSchedule["jira"]:
+        return False
+    if len(aSchedule["jira"]["paths"]) < 1:
+        return False
+
+    return True
+
+#######################################
+# Make the jira field of a test based on a reccuring schedule
+# If NEWSAMPLEON is true in rrule or it is the first test, make a new sample
+# set. In this case, no work is needed and just return the jira field of
+# the recurring schedule.
+# In other case, the new jira field is based path IDs that were tested
+# previously.
+#######################################
+def mkJiraField(rrule, aSchedule):
+
+    # Case: NEWSAMPLEON is true
+    if "NEWSAMPLEON" in rrule.keys() and rrule["NEWSAMPLEON"].lower() == "true":
+        return aSchedule["jira"]
+
+    # Case: The first time a test is being scheduled based on the recurring test
+    allTests = dbConn.getRow(
+        "testSchedule",
+        ["name", "gitBranch", "mmaVersion"],
+        [aSchedule["name"], aSchedule["gitBranch"], aSchedule["mmaVersion"]],
+        ["id", "status", "jira"],
+        fltr="ORDER BY created DESC",
+        mkObjQ=True
+    )
+    logging.debug("All of the previous tests in {name}: {cnt}".format(
+        name=aSchedule["name"], cnt=len(allTests)))
+    if len(allTests) <= 1:
+        return aSchedule["jira"]
+
+    # Other cases
+    # Extract the tests that have completed or scheduled
+    statusCompleted = [
+        "reported", "success", "failSome", "scheduled", "pending"]
+    oldSchedules = list(filter(
+        lambda x: x["status"] in statusCompleted, allTests))
+
+    for anOldSchedule in oldSchedules:
+        # If jira field contains path IDs, just return it
+        if jiraGotPathsQ(anOldSchedule):
+            return anOldSchedule["jira"]
+
+        # If jira field does not contain path IDs, build it from testPath
+        # NOTE: Very unusual case that this function go this far. If a test was
+        # scheduled based on a recurring schedule, there must be a test with
+        # paths in its jira field
+        pathIds = dbConn.getRow(
+            "testPath",
+            ["schedule_id"],
+            [anOldSchedule["id"]],
+            ["path_id"],
+            fltr=""
+        )
+        if len(pathIds) > 0:
+            return {"paths": [i[0] for i in pathIds]}
+
+    # When a jira field can't be built based on an old test, use
+    # the jira field of the recurrence test
+    # Senario: the first test of the recurring schedule will have this issue
+    return aSchedule["jira"]
+
+
+#######################################
 # Make a s scheduled
 #######################################
 def mkSchedule(aSchedule, stampNow=datetime.datetime.utcnow()):
@@ -139,12 +212,16 @@ def mkSchedule(aSchedule, stampNow=datetime.datetime.utcnow()):
                 aSchedule,
                 skip=[
                     "status", "host", "pid", "gitBranch", "gitHash",
-                    "msg", "rrule", "jiraResp", "started", "finished"
+                    "msg", "rrule", "jiraResp", "started", "finished",
+                    "created", "updated", "jira"
                 ]
             )
             # Update the fields of the new schedule
             newSchedule["gitHash"] = gitHash
             newSchedule["status"] = "pending"
+            # Build the jira field of the new schedule based a previous test
+            newSchedule["jira"] = mkJiraField(rrule, aSchedule)
+
 
             # These fields are handled by the database, so remove them
             if "id" in newSchedule:
@@ -157,12 +234,12 @@ def mkSchedule(aSchedule, stampNow=datetime.datetime.utcnow()):
             # Add the new schedule in testSchedule
             dbConn.addTestSchedule(newSchedule)
             return {"status": True, "result": "Scheduled a test based on the recurring schedule: {name}".format(
-                name=newSchedule["name"]
+                name=aSchedule["name"]
             )}
         else:
             return {
                 "status": False,
-                "result": "Test {name} had already scheduled with gitBranch-{branch} gitHash-{hash}".format(
+                "result": "Test {name} had already scheduled at gitHash {hash} on gitBranch {branch}".format(
                     name=aSchedule["name"], branch=aSchedule["gitBranch"],
                     hash=gitHash)
             }

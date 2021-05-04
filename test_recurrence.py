@@ -27,7 +27,7 @@ def template():
 def decodeRrule():
     # data = "FREQ=DAILY;"
     # data = "TZID=US-Eastern:19970902T090000;FREQ=WEEKLY;COUNT=10"
-    data = "FREQ=WEEKLY;INTERVAL=2"
+    data = "FREQ=WEEKLY;INTERVAL=2;NEWSAMPLEON=TRUE"
     rslt = recurrence.decodeRrule(data)
     print(rslt)
 
@@ -85,28 +85,6 @@ def testSchedule():
     )
     print (rslt)
 
-def mkSchedule():
-    tbl = "testSchedule"
-    aSchedule = dbConn.getRow(tbl, ["id"], [1], dbConn.getFields(tbl), mkObjQ=True)[0]
-    # print(aSchedule)
-    # sys.exit()
-    # START HERE
-    # aSchedule["rrule"] = "FREQ=DAILY"
-    aSchedule["created"] = datetime.datetime(2021, 3, 30, 15, 00, 00)
-    # aSchedule["gitBranch"] = "lates"
-    # aSchedule["gitHash"] = "lates"
-    aSchedule["status"] = "recurring"
-    aSchedule["msg"] = "someRandomMsg"
-
-    # stampNow = datetime.datetime(2021, 3, 31, 11, 25, 00)
-    # stampNow = datetime.datetime(2021, 3, 31, 11, 35, 00)
-    # stampNow = datetime.datetime(2021, 3, 31, 11, 25, 00)
-    # stampNow = datetime.datetime(2021, 3, 31, 11, 30, 00)
-    stampNow = datetime.datetime(2021, 3, 31, 15, 00, 00) # True
-    # stampNow = datetime.datetime(2021, 3, 31, 15, 10, 00) # False
-    rslt = recurrence.mkSchedule(aSchedule, stampNow)
-    print(rslt)
-
 def scheduleByRecurrence():
     # recSchedule = schedule.defaultSettings(
     #     "testSchedule",
@@ -126,11 +104,95 @@ def scheduleByRecurrence():
     #     "created", datetime.datetime(2021, 3, 2, 14, 46, 00))
     recurrence.scheduleByRecurrence()
 
+
+def mkJiraField():
+    table = "testSchedule"
+    aSchedule = dbConn.getRow(
+        table,
+        ["id"],
+        [88],
+        # [28],
+        dbConn.getFields(table),
+        fltr="",
+        mkObjQ=True
+    )[0]
+    # aRule = recurrence.decodeRrule("FREQ=DAILY;NEWSAMPLEON=TRUE")
+    # aRule = recurrence.decodeRrule("FREQ=DAILY")
+    # aRule = recurrence.decodeRrule("FREQ=DAILY;NEWSAMPLEON=FALSE")
+    aRule = recurrence.decodeRrule(aSchedule["rrule"])
+    rslt = recurrence.mkJiraField(aRule, aSchedule)
+    print (rslt)
+
+def sampleOn():
+    aRule = recurrence.decodeRrule("FREQ=DAILY")
+    table = "testSchedule"
+    aSchedule = dbConn.getRow(
+        table,
+        ["id"],
+        [88],
+        # [28],
+        dbConn.getFields(table),
+        fltr="",
+        mkObjQ=True
+    )[0]
+    recSchedule = schedule.defaultSettings(
+        table,
+        aSchedule,
+        skip=[
+            "status", "host", "pid", "gitBranch", "gitHash",
+            "msg", "rrule", "jiraResp", "started", "finished", "created",
+            "updated", "jira"
+        ]
+    )
+    print("recSchedule: {}".format(recSchedule))
+
+    rslt = recurrence.mkJiraField(aRule, recSchedule)
+    print (rslt)
+
+def mkSchedule():
+    tbl = "testSchedule"
+    gitHash = "7831f709257f7ecf7e4b8514546a1dc358cbd6c8"
+    dbConn.modTbl(tbl, ["id"], [90], "gitHash", gitHash)
+    dbConn.modTbl(tbl, ["id"], [88], "rrule", "FREQ=DAILY;NEWSAMPLEON=FALSE")
+    # dbConn.modTbl(tbl, ["id"], [88], "rrule", "FREQ=DAILY;NEWSAMPLEON=TRUE")
+    # jiraVal = json.dumps({"fields": ["key"], "qstnType": "StepWise", "useFilter": "filterTest4"})
+    jiraVal = json.dumps({"questions": ["QUES-6018"]})
+    dbConn.modTbl(tbl, ["id"], [88], "jira", jiraVal)
+    aSchedule = dbConn.getRow(tbl, ["id"], [88], dbConn.getFields(tbl), mkObjQ=True)[0]
+    print("aSchedule: {}".format(aSchedule))
+
+    # aSchedule["rrule"] = "FREQ=DAILY;NEWSAMPLEON=FALSE"
+    # aSchedule["created"] = datetime.datetime(2021, 3, 30, 15, 00, 00)
+    # aSchedule["gitBranch"] = "lates"
+    # aSchedule["gitHash"] = "lates"
+    # aSchedule["status"] = "recurring"
+    # aSchedule["msg"] = "someRandomMsg"
+
+    # stampNow = datetime.datetime(2021, 3, 31, 11, 25, 00)
+    # stampNow = datetime.datetime(2021, 3, 31, 11, 35, 00)
+    # stampNow = datetime.datetime(2021, 3, 31, 11, 25, 00)
+    # stampNow = datetime.datetime(2021, 3, 31, 11, 30, 00)
+    stampNow = datetime.datetime(2021, 5, 4, 19, 34, 00) # True
+    # stampNow = datetime.datetime(2021, 3, 31, 15, 10, 00) # False
+    rslt = recurrence.mkSchedule(aSchedule, stampNow)
+    print(rslt)
+
+def jiraGotPathsQ():
+    # data = {"jira": {"questions": ["a", "b"]}}
+    # data = {"jira": {"paths": []}}
+    # data = {"jira": {"paths": [1, 2]}}
+    data = {"jiras": {"paths": [1,2]}}
+    rslt = recurrence.jiraGotPathsQ(data)
+    print (rslt)
+
 if __name__ == '__main__':
+    mkSchedule()
+    # sampleOn()
+    # jiraGotPathsQ()
+    # mkJiraField()
     # scheduleByRecurrence()
-    # mkSchedule()
     # testSchedule()
     # mkScheduleQ()
-    timeToRunQ()
+    # timeToRunQ()
     # timeToSec()
     # decodeRrule()
