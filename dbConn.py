@@ -33,7 +33,7 @@ def getJsonStringFlds(tbl):
     return switcher.get(tbl, [])
 
 #######################################
-# 
+#
 #######################################
 def isJsonStringQ(val):
     if not isinstance(val, str):
@@ -144,6 +144,33 @@ def getRow(tbl, cols, vals, colsRtrn, fltr="LIMIT 1", mkObjQ=False):
     logging.debug("getRow-sql: {}".format(sql))
 
     rslt = exec(sql, vals=tuple(vals))
+    return mkObjs(colsRtrn, rslt, table=tbl) if mkObjQ else rslt
+
+#######################################
+# Get a row from a table using IN conditions
+# tbl: a table name
+# cols: a list of fields for the query condition
+# vals: a list of lists for the conditional values
+# colsRtrn: a list of fields to be returned
+# [fltr]: additional query attributes
+# [mkObjQ]: turn the result into dicts
+# SELECT <colsRtrn> FROM <tbl> WHERE
+#   <cols[0]> IN (<[vals1]>) AND <cols[2]> IN (<[vals2]>);
+#######################################
+def getRowInConds(
+    tbl, cols, vals, colsRtrn, operator="AND", fltr="LIMIT 1", mkObjQ=False
+):
+    sqlRtrn = ",".join(colsRtrn)
+    sqlCondParts = [
+        "{cl} IN ({vls})".format(cl=i[0], vls=",".join(["%s"] * len(i[1])))
+        for i in zip(cols, vals)
+    ]
+    sqlCond = " {opr} ".format(opr=operator).join(sqlCondParts)
+    sql = "SELECT {flds} FROM {tbl} WHERE {cond} {fltr};".format(
+        flds=sqlRtrn, tbl=tbl, cond=sqlCond, fltr=fltr)
+    logging.debug("getRow-sql: {}".format(sql))
+
+    rslt = exec(sql, vals=tuple([item for part in vals for item in part]))
     return mkObjs(colsRtrn, rslt, table=tbl) if mkObjQ else rslt
 
 #######################################
