@@ -1,6 +1,7 @@
 ###############################################################################
 # test.py
 # Testing module
+# python3 test_dbConn.py
 ###############################################################################
 from mysql.connector import errorcode
 import mysql.connector
@@ -65,9 +66,23 @@ def testJsonFields():
     flds = dbConn.getJsonStringFlds(tbl)
     print (flds)
 
+def updateJson():
+    # rslt = dbConn.updateJson("testSchedule", "id", 3, "msg", {"a": 1})
+    # rslt = dbConn.updateJson("testSchedule", "id", 300, "msg", {"a": 1})
+    # rslt = dbConn.updateJson("testSchedule", "id", 1000, "msg", {"state1": {"a": 1}})
+    # rslt = dbConn.updateJson("testSchedule", "id", 1, "msg", {"state1": {"a": 1}
+    rslt = dbConn.updateJson(
+        "testSchedule",
+        "id", 1,
+        "msg", {"state2": {"a": 2}}
+    )
+    print (rslt)
+
+
 if __name__ == '__main__':
+    updateJson()
     # getRow()
     # testJsonFields()
-    mkObjs()
+    # mkObjs()
     # addTestSchedule()
     # pathsInSchedule()
