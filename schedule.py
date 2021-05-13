@@ -136,7 +136,7 @@ def getNewPaths(scheduleId, pathIds):
 #######################################
 def mkTestPath(aTask, data):
     tbl = "testPath"
-    skipFields = ["msg","started","finished","created","updated"]
+    skipFields = ["status","msg","started","finished","created","updated"]
 
     if len(data) < 1:
         return {
@@ -329,6 +329,8 @@ def qstnsToTestPath(aTask, qstns):
 
     for qstnUnq in qstns:
         rsltQstn = qstnToTestPath(aTask, qstnUnq)
+        if rsltQstn["status"] == False:
+            logging.warning("Failed: {}".format(rsltQstn["result"]))
         rsltQstn["unq"] = qstnUnq
         result.append(rsltQstn)
 
@@ -392,7 +394,7 @@ def scheduleToTestPath(aTask, pathInfo):
 
     # Create the test paths in testPath
     rslt = mkTestPath(aTask, newInfo)
-    
+
     return rslt
 
 
@@ -466,17 +468,17 @@ def handlePath(aTask):
 # Handle when schedule reqType is schedule ID
 #######################################
 def handleSchedule(aTask):
-    
+
     if "useScheduleId" not in aTask["jira"]:
         return {
             "status": False,
-            "reslt": "Invalid jira field"
+            "result": "Invalid jira field"
         }
-        
+
     if type(aTask["jira"]["useScheduleId"]) != int:
         return {
             "status": False,
-            "reslt": "Invalid schedule ID"
+            "result": "Invalid schedule ID"
         }
 
     # Get test paths of the task
@@ -497,8 +499,7 @@ def handleSchedule(aTask):
 # Handle when schedule reqType is invalid
 #######################################
 def handleInvalid(aTask):
-    msg = "Invalid jira field in Task {}".format(aTask["id"])
-    logging.error(msg)
+    msg = "Invalid jira field"
     return {
         "status": False,
         "result": msg
@@ -537,62 +538,49 @@ def processReq(aTask):
 #######################################
 def summarizeQstn(tbl, aTask, data):
     successQstns = list(filter(lambda x: x["status"] == True, data))
-    successUnqs = list(map(lambda x: x["unq"], successQstns))
-    logging.info("Questions scheduled: {}".format(len(successUnqs)))
-    logging.debug("summarizeQstn - data: {}".format(data))
-
+    logging.info("Questions scheduled: {}".format(len(successQstns)))
     failedQstns = list(filter(lambda x: x["status"] == False, data))
-    logging.debug("summarizeQstn - failedQstns: {}".format(failedQstns))
 
-    # Determine the scheduler status
-    theStatus = ""
-    if len(successQstns) > 0 and len(failedQstns) == 0:
-        theStatus = "success"
-    elif len(successQstns) == 0 and len(failedQstns) > 0:
-        theStatus = "fail"
-        logging.warning("Questions failed: {}".format(len(failedQstns)))
-    elif len(successQstns) > 0 and len(failedQstns) > 0:
-        theStatus = "failSome"
-    else:
+    # Determine the status of the task
+    theStatus = "scheduled"
+    if len(successQstns) <= 0 and len(data) > 0:
         theStatus = "fail"
 
-    # Determine the scheduler msg
-    theMsg = ""
-    if theStatus == "fail" or theStatus == "failSome":
-        theMsg = json.dumps(
-            {"success": len(successQstns), "fail": failedQstns},
-            separators=(',', ':')
+    # Report any failed questions
+    if len(failedQstns) > 0:
+        dbConn.updateJson(tbl, "id", aTask["id"],
+            "msg", {"schedule-summarizeQstn": failedQstns}
         )
+        logging.warning("Questions failed: {}".format(len(failedQstns)))
 
-    # Update the testSchedule table with the result
+    # Update the task status
     dbConn.modMultiVals(
         tbl,
         ["id"], [aTask["id"]],
-        ["status", "msg", "finished"],
-        [theStatus, theMsg, datetime.utcnow()]
+        ["status", "finished"],
+        [theStatus, datetime.utcnow()]
     )
+
 
 #######################################
 # Summarize the result based on scheduling by path IDs
 #######################################
 def summarizePath(tbl, aTask, data):
+    theStatus = "scheduled"
+
     # Updated the status on the fail case
     if not data["status"]:
-        dbConn.modMultiVals(
-            tbl,
-            ["id"], [aTask["id"]],
-            ["status", "finished", "msg"],
-            ["fail", datetime.utcnow(), data["result"]]
+        theStatus = "fail"
+        dbConn.updateJson(tbl, "id", aTask["id"],
+            "msg", {"schedule-summarizePath": data["result"]}
         )
-        return
-    else:
-        dbConn.modMultiVals(
-            tbl,
-            ["id"], [aTask["id"]],
-            ["status", "finished"],
-            ["success", datetime.utcnow()]
-        )
-        return
+
+    dbConn.modMultiVals(
+        tbl,
+        ["id"], [aTask["id"]],
+        ["status", "finished"],
+        [theStatus, datetime.utcnow()]
+    )
 
 
 ###############################################################################
@@ -610,25 +598,24 @@ def task(aTask):
 
      # If status is false, update the status in testSchedule
     if rsltReq["status"] == False:
-        taskModule.modStts(
-            aTask["id"], "fail",
-            ["msg"],
-            [rsltReq["result"]]
-        )
+        # Update the status and msg of the failed task
+        dbConn.modField(tbl, "id", aTask["id"], "status", "fail")
+        dbConn.updateJson(tbl, "id", aTask["id"],
+            "msg", {"schedule-processReq": rsltReq})
+
         logging.error("Failed on processReq in schedule-task: {}".format(
             rsltReq["result"]))
-        return 
-
-    # Add request data in testPath
-    if rsltReq["reqType"] == "jira" or rsltReq["reqType"] == "question":
-        rslt = qstnsToTestPath(aTask, rsltReq["result"])
-        summarizeQstn(tbl, aTask, rslt)
-    elif rsltReq["reqType"] == "schedule":
-        rslt = scheduleToTestPath(aTask, rsltReq["result"])
-        summarizePath(tbl, aTask, rslt)
-    elif rsltReq["reqType"] == "path":
-        rslt = pathsToTestPath(aTask)
-        summarizePath(tbl, aTask, rslt)
+    else:
+        # Add request data in testPath
+        if rsltReq["reqType"] == "jira" or rsltReq["reqType"] == "question":
+            rslt = qstnsToTestPath(aTask, rsltReq["result"])
+            summarizeQstn(tbl, aTask, rslt)
+        elif rsltReq["reqType"] == "schedule":
+            rslt = scheduleToTestPath(aTask, rsltReq["result"])
+            summarizePath(tbl, aTask, rslt)
+        elif rsltReq["reqType"] == "path":
+            rslt = pathsToTestPath(aTask)
+            summarizePath(tbl, aTask, rslt)
 
     logging.info("Task {id} ({name}) --- Finish".format(
         id=aTask["id"], name=aTask["name"]))

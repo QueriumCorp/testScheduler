@@ -65,7 +65,7 @@ if __name__ == '__main__':
                 time.sleep(int(os.environ.get('sleepTime')))
                 continue
             ## Update status to running
-            task.modStts(aTask["id"], "running",
+            task.modStts(aTask["id"], "scheduling",
                 cols=["started"],vals=[datetime.utcnow()])
 
             ## Validate and checkout gitBranch and gitHash
@@ -93,4 +93,4 @@ if __name__ == '__main__':
         except:
             logging.error(msgErr)
         else:
-            rslt = schedule.task(aTask)
+            schedule.task(aTask)

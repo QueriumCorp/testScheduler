@@ -34,7 +34,7 @@ def next():
 
     # Get a pending task
     data = dbConn.getRow(
-        tbl, [colStts], ["pending"],
+        tbl, [colStts], ["schedule"],
         dbConn.getFields("testSchedule"), mkObjQ=True)
     if data is None or len(data) < 1:
         return []
