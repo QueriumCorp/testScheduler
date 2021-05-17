@@ -119,6 +119,8 @@ def exec(query, cmd="fetchall", vals=tuple()):
             print("Something is wrong with your user name or password")
         elif err.errno == errorcode.ER_BAD_DB_ERROR:
             print("Database does not exist")
+        elif err.errno == 1054:
+            print("exec: Invalid field name")
         else:
             print(err)
         raise
@@ -394,4 +396,34 @@ def modField(tbl, condCol, condVal, setCol, setVal):
         tbl=tbl, setC=setCol, condC=condCol)
     logging.debug("modField-sql: {}".format(sql))
 
-    exec(sql, cmd = "commit", vals=(setVal, condVal))
+    exec(sql, cmd="commit", vals=(setVal, condVal))
+
+#######################################
+# Update a JSON value of a field in a table
+#
+#######################################
+def updateJson(table, condC, condV, setC, setV):
+    dataNew = setV
+
+    # Get the value of the setC from the table
+    dataOld = getRow(table, [condC], [condV], [setC])
+    logging.debug("old data: {}".format(dataOld))
+
+    # If there is some existing data, combine it to the new data
+    if len(dataOld) > 0:
+        dataJson = dataOld[0][0].strip()
+        # Handle if the old data is a json-string
+        if len(dataJson) > 1 and dataJson[0] == "{" and dataJson[-1] == "}":
+            dataNew.update(json.loads(dataJson))
+        elif len(dataJson) > 0:
+            dataNew.update({"state0": {"msg": dataJson}})
+            logging.warning("The old msg isn't a json-string: {}".format(
+                dataJson))
+        else:
+            logging.debug("The old data is empty")
+    else:
+        return {"status": False, "result": "Invalid condV: {}".format(condV)}
+
+    # Upload the combined dict in the table
+    modField(table, condC, condV, setC, json.dumps(dataNew))
+    return {"status": True, "result": "success"}
