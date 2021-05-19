@@ -218,7 +218,7 @@ def mkSchedule(aSchedule, stampNow=datetime.datetime.utcnow()):
             )
             # Update the fields of the new schedule
             newSchedule["gitHash"] = gitHash
-            newSchedule["status"] = "pending"
+            newSchedule["status"] = "schedule"
             # Build the jira field of the new schedule based a previous test
             newSchedule["jira"] = mkJiraField(rrule, aSchedule)
 
