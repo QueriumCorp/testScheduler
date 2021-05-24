@@ -28,13 +28,13 @@ def modStts(id, stts, cols=[], vals=[]):
 ###############################################################################
 # Main logic
 ###############################################################################
-def next():
+def next(valStts="schedule"):
     tbl = "testSchedule"
     colStts = "status"
 
     # Get a pending task
     data = dbConn.getRow(
-        tbl, [colStts], ["schedule"],
+        tbl, [colStts], [valStts],
         dbConn.getFields("testSchedule"), mkObjQ=True)
     if data is None or len(data) < 1:
         return []

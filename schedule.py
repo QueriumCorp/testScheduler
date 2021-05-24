@@ -132,6 +132,33 @@ def getNewPaths(scheduleId, pathIds):
 
 
 #######################################
+# Failed the paths that have multiple reference traces
+#######################################
+def failMultiRefs(data, sttsFail="fail"):
+    msg = "multiple refs"
+
+    pathIds = list(map(lambda x: x["path_id"], data))
+    fldCnt = "COUNT(*)"
+    refCounts = dbConn.getRowInConds(
+        "path_trace",
+        ["path_id", "type"],
+        [pathIds, ["ref"]],
+        ["path_id", fldCnt],
+        fltr="GROUP BY path_id,type",
+        mkObjQ=True
+    )
+
+    # Get the pathIds that have multiple reference traces
+    pathsToFail = list(filter(lambda x: x[fldCnt] > 1, refCounts))
+    pathIdsToFail = list(map(lambda x: x["path_id"], pathsToFail))
+
+    # Update the status and the msg of the paths that have multiple refs
+    for aRow in data:
+        if aRow["path_id"] in pathIdsToFail:
+            aRow["status"] = sttsFail
+            aRow["msg"] = msg
+
+#######################################
 # mk test paths
 #######################################
 def mkTestPath(aTask, data):
@@ -153,6 +180,9 @@ def mkTestPath(aTask, data):
             if k in pathRow:
                 pathRow[k] = pathInfo[k]
         dbData.append(pathRow)
+
+    # Fail the multi-ref paths
+    failMultiRefs(dbData)
 
     # Add the test paths in the testPath table
     if len(dbData) > 0:
@@ -364,7 +394,7 @@ def pathsToTestPath(aTask):
     pathInfo = mkPathInput(aTask)
     logging.debug("pathsToTestPath-pathInfo: {}".format(pathInfo))
 
-    # Remove any path_id(s) that are already in testPath under task["name"]
+    # Remove any path_id(s) that are already in testPath under task["id"]
     allPaths = list(map(lambda x: x["path_id"], pathInfo))
     newPaths = getNewPaths(aTask["id"], allPaths)
     newInfo = list(filter(lambda x: x["path_id"] in newPaths, pathInfo))
