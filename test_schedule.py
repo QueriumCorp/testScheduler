@@ -101,11 +101,10 @@ def handleSchedule():
     aTask = {"jira": {"useScheduleId": 4}}
     rslt = schedule.handleSchedule(aTask)
     print(rslt)
-    
+
 def runTask():
-    # task.modStts(4, "success", ["msg"], [""])
-    task.modStts(85, "pending", ["msg"], [""])
-    aTask = task.next()
+    task.modStts(151, "pending", ["msg"], [""])
+    aTask = task.next(valStts="pending")
     schedule.task(aTask)
 
 def processReq2():
@@ -127,9 +126,35 @@ def qstnsToTestPath():
     print("rslt")
     print(rslt)
 
+def failMultiRefs():
+    data = [
+        {
+            'question_id': 56159,
+            'path_id': 46677,
+            'status': "pending",
+            'msg': ""
+        },
+        {
+            'question_id': 56161,
+            'path_id': 51138,
+            'status': "pending",
+            'msg': ""
+        },
+        {
+            'question_id': 17693,
+            'path_id': 78173,
+            'status': "pending",
+            'msg': ""
+        }
+    ]
+    schedule.failMultiRefs(data)
+    print(data)
+
+
 if __name__ == '__main__':
-    # qstnsToTestPath()
     runTask()
+    # failMultiRefs()
+    # qstnsToTestPath()
     # processReq2()
     # handleSchedule()
     # mkTestPath()
