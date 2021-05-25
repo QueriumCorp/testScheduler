@@ -24,7 +24,6 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 import time
-import input
 import jql
 import test
 import sys
