@@ -1,6 +1,6 @@
 ###############################################################################
-# test.py
 # Testing module
+# python3 test_old.py
 ###############################################################################
 import gitdb
 from mysql.connector import errorcode
@@ -14,7 +14,6 @@ import dbConn
 from urllib.parse import urlencode
 import os
 import jql
-import input
 import jira
 import util
 from dotenv import load_dotenv

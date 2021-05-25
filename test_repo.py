@@ -1,6 +1,6 @@
 ###############################################################################
-# test.py
 # Testing module
+# python3 test_repo.py
 ###############################################################################
 from mysql.connector import errorcode
 import mysql.connector
@@ -13,7 +13,6 @@ import dbConn
 from urllib.parse import urlencode
 import os
 import jql
-import input
 import jira
 import util
 from dotenv import load_dotenv

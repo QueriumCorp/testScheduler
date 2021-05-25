@@ -1,15 +1,6 @@
 ###############################################################################
 # filter.py
 # Jira API module
-
-# Requirements
-# Python >= 3.4
-# Git 1.7.0 or newer
-
-# Need the following modules
-# python3 -m pip install python-dotenv
-# python3 -m pip install requests
-
 ###############################################################################
 from dotenv import load_dotenv
 load_dotenv()
@@ -209,7 +200,7 @@ def process(aTask):
 
     # Response of the jql request
     jqlRslt = search(req)
-    
+
     # If jira request fails, update testSchdule and return
     if jqlRslt["status"] == False:
         jqlRslt["result"] =  "jira response error: {}".format(jqlRslt["result"])
