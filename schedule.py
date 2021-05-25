@@ -134,7 +134,47 @@ def getNewPaths(scheduleId, pathIds):
 #######################################
 # Failed the paths that have multiple reference traces
 #######################################
-def failMultiRefs(data, sttsFail="fail"):
+def fixMultiRefs(pathIds):
+    for pathId in pathIds:
+        pathInfo = dbConn.getRow(
+            "path_trace",
+            ["path_id", "type"], [pathId, "ref"],
+            ["path_id", "trace_id", "type"],
+            fltr="", mkObjQ=True
+        )
+
+        # If there aren't multiple references in this path, go to the next id
+        if len(pathInfo) < 2:
+            continue
+
+        # Get the newest ref. It means the highest trace_id
+        theRef = max(pathInfo, key=lambda x: x["trace_id"])
+
+        # Get the older refs
+        refOld = list(filter(
+            lambda x: x["trace_id"] != theRef["trace_id"], pathInfo))
+
+        # Change the type value to "refOld"
+        for i in refOld:
+            dbConn.modTbl(
+                "path_trace",
+                ["path_id", "trace_id"],
+                [i["path_id"], i["trace_id"]],
+                "type", "refOld"
+            )
+        logging.info("Fixed multi-ref in path: {}".format(theRef["path_id"]))
+
+#######################################
+# Check the setting to fix multi-refs in a path
+#######################################
+def fixMultiRefsQ():
+    return os.environ.get('fixMultiRefs') is not None and \
+        os.environ.get('fixMultiRefs').lower() == "true"
+
+#######################################
+# Failed the paths that have multiple reference traces
+#######################################
+def handleMultiRefs(data, sttsFail="fail"):
     msg = "multiple refs"
 
     pathIds = list(map(lambda x: x["path_id"], data))
@@ -149,14 +189,17 @@ def failMultiRefs(data, sttsFail="fail"):
     )
 
     # Get the pathIds that have multiple reference traces
-    pathsToFail = list(filter(lambda x: x[fldCnt] > 1, refCounts))
-    pathIdsToFail = list(map(lambda x: x["path_id"], pathsToFail))
+    pathsToHandle = list(filter(lambda x: x[fldCnt] > 1, refCounts))
+    pathIdsToHandle = list(map(lambda x: x["path_id"], pathsToHandle))
 
-    # Update the status and the msg of the paths that have multiple refs
-    for aRow in data:
-        if aRow["path_id"] in pathIdsToFail:
-            aRow["status"] = sttsFail
-            aRow["msg"] = msg
+    if fixMultiRefsQ():
+        fixMultiRefs(pathIdsToHandle)
+    else:
+        # Update the status and the msg of the paths that have multiple refs
+        for aRow in data:
+            if aRow["path_id"] in pathIdsToHandle:
+                aRow["status"] = sttsFail
+                aRow["msg"] = msg
 
 #######################################
 # mk test paths
@@ -182,7 +225,7 @@ def mkTestPath(aTask, data):
         dbData.append(pathRow)
 
     # Fail the multi-ref paths
-    failMultiRefs(dbData)
+    handleMultiRefs(dbData)
 
     # Add the test paths in the testPath table
     if len(dbData) > 0:
