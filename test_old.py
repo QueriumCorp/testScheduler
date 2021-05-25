@@ -1,6 +1,6 @@
 ###############################################################################
-# test.py
 # Testing module
+# python3 test_old.py
 ###############################################################################
 import gitdb
 from mysql.connector import errorcode

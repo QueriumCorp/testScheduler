@@ -1,6 +1,6 @@
 ###############################################################################
-# test.py
 # Testing module
+# python3 test_task.py
 ###############################################################################
 from mysql.connector import errorcode
 import mysql.connector

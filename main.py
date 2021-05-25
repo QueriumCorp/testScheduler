@@ -1,24 +1,9 @@
 ###############################################################################
 # main.py
 # The main module
-
-# Requirements
-# Python >= 3.4
-# Git 1.7.0 or newer
-
-# Need the following modules
-# python3 -m pip install python-dotenv
-# python3 -m pip install requests
-
-
-# To run
-# python3 main.py '{"summary":"OSCAGc07s01*", "labels": ["CSULAWeek01"], "qstnType":"StepWise", "fields":["key"]}'
-# or
-# python3 main.py '{"jql": "project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \"Mathematica Specification\" !~ MatchSpec", "fields":["key"]}'
-# or
-# python3 main.py '{"makeFilter": "aNewFilterName", "jql": "project = QUES AND Labels = CSULAWeek01 AND Labels != NotRoverReady AND Labels != HasStepWiseVariants AND \"Mathematica Specification\" !~ MatchSpec", "fields":["key"]}'
-# or
-# python3 main.py '{"useFilter": "filterTest1", "fields":["key"]}'
+#
+# Get started documentation
+# https://github.com/QueriumCorp/testScheduler/wiki/Get-Started
 ###############################################################################
 from dotenv import load_dotenv
 load_dotenv()
