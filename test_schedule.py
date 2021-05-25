@@ -126,7 +126,7 @@ def qstnsToTestPath():
     print("rslt")
     print(rslt)
 
-def failMultiRefs():
+def handleMultiRefs():
     data = [
         {
             'question_id': 56159,
@@ -147,13 +147,21 @@ def failMultiRefs():
             'msg': ""
         }
     ]
-    schedule.failMultiRefs(data)
+    schedule.handleMultiRefs(data)
     print(data)
 
+def fixMultiRefs():
+    pathIds = [42]
+    schedule.fixMultiRefs(pathIds)
+
+def fixMultiRefsQ():
+    print ("fixMultiRefsQ: {}".format(schedule.fixMultiRefsQ()))
 
 if __name__ == '__main__':
-    runTask()
-    # failMultiRefs()
+    handleMultiRefs()
+    # fixMultiRefsQ()
+    # fixMultiRefs()
+    # runTask()
     # qstnsToTestPath()
     # processReq2()
     # handleSchedule()
