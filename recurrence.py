@@ -211,7 +211,7 @@ def mkSchedule(aSchedule, stampNow=datetime.datetime.utcnow()):
                 "testSchedule",
                 aSchedule,
                 skip=[
-                    "status", "host", "pid", "gitBranch", "gitHash",
+                    "status", "pid", "gitHash",
                     "msg", "rrule", "jiraResp", "started", "finished",
                     "created", "updated", "jira"
                 ]
