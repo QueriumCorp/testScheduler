@@ -55,6 +55,13 @@ if __name__ == '__main__':
             ## Validate and checkout gitBranch and gitHash
             aTask["gitHash"] = repo.getGitHash(aTask)
 
+        except git.exc.RepositoryDirtyError as err:
+            msgErr = "The {dir} has uncommitted changes".format(
+                dir=repo.getRepoDir())
+            task.modStts(aTask["id"], "fail",
+                cols=["msg", "finished"],
+                vals=[msgErr, datetime.utcnow()])
+            logging.error(msgErr)
         except git.exc.GitCommandError as err:
             msgErr = "Task {id} has an invalid gitBranch: {branch}".format(
                 id=aTask["id"], branch=aTask["gitBranch"])
