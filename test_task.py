@@ -21,7 +21,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 def next():
-    task.modStts(71, "pending", ["msg"], [""])
+    task.modStts(584, "schedule", ["msg"], [""])
     rslt = task.next()
     # rslt = schedule.task(aTask)
     print(rslt)
@@ -33,3 +33,5 @@ def template():
 
 if __name__ == '__main__':
     next()
+    # rslt = task.next()
+    # print(rslt)

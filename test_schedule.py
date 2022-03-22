@@ -57,11 +57,12 @@ def getNewPaths():
 def defaultSettings():
     task.modStts(4, "pending", ["msg"], [""])
     aTask = task.next()
-    print ("aTask:", aTask)
+    print("aTask:", aTask)
     tbl = "testPath"
     skipFields = ["msg", "started", "finished"]
     rslt = schedule.defaultSettings(tbl, aTask, skipFields)
     print(rslt)
+
 
 def mkTestPath():
     task.modStts(48, "pending", ["msg"], [""])
@@ -74,6 +75,7 @@ def mkTestPath():
 
     print("rslt:")
     print(rslt)
+
 
 def multiUnq():
     aRow = dbConn.getRow(
@@ -92,6 +94,7 @@ def multiUnq():
     # print("rslt:")
     # print(rslt)
 
+
 def handleSchedule():
     # task.modStts(55, "pending", ["msg"], [""])
     # aTask = task.next()
@@ -101,10 +104,12 @@ def handleSchedule():
     rslt = schedule.handleSchedule(aTask)
     print(rslt)
 
+
 def runTask():
     task.modStts(151, "pending", ["msg"], [""])
     aTask = task.next(valStts="pending")
     schedule.task(aTask)
+
 
 def processReq2():
     task.modStts(85, "pending", ["msg"], [""])
@@ -124,6 +129,7 @@ def qstnsToTestPath():
     rslt = schedule.qstnsToTestPath(aTask, rsltReq["result"])
     print("rslt")
     print(rslt)
+
 
 def handleMultiRefs():
     data = [
@@ -149,15 +155,32 @@ def handleMultiRefs():
     schedule.handleMultiRefs(data)
     print(data)
 
+
 def fixMultiRefs():
     pathIds = [42]
     schedule.fixMultiRefs(pathIds)
 
+
 def fixMultiRefsQ():
-    print ("fixMultiRefsQ: {}".format(schedule.fixMultiRefsQ()))
+    print("fixMultiRefsQ: {}".format(schedule.fixMultiRefsQ()))
+
+
+def testSchedule():
+    task.modStts(584, "schedule", ["msg"], [""])
+    aTask = task.next()
+    print("aTask: ")
+    print(aTask)
+    aTask["gitHash"] = repo.getGitHash(aTask)
+    schedule.task(aTask)
+
+def testQueue():
+    task.modStts(586, "schedule", ["msg"], [""])
+    task.modStts(587, "schedule", ["msg"], [""])
 
 if __name__ == '__main__':
-    handleMultiRefs()
+    testQueue()
+    # testSchedule()
+    # handleMultiRefs()
     # fixMultiRefsQ()
     # fixMultiRefs()
     # runTask()
