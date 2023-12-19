@@ -13,7 +13,7 @@ python3 --version
 ## Installation
 Change to a directory you want to keep testScheduler
 ```
-cd /someDirectory/
+cd /home/webappuser/evan/repos/
 ```
 Clone the github repository 
 ```
@@ -45,11 +45,11 @@ pip list
 ```
 Create a symbolic link to the program in the repository
 ```
-sudo ln -s /someDirectory/testScheduler/main.py /usr/local/bin/testScheduler
+sudo ln -s /home/webappuser/evan/repos/testScheduler/main.py /usr/local/bin/testScheduler
 ```
 Copy the unit configuration file to the systemd directory
 ```
-sudo cp /someDirectory/testScheduler/testScheduler.service /etc/systemd/system/testScheduler.service
+sudo cp /home/webappuser/evan/repos/testScheduler/testScheduler.service /etc/systemd/system/testScheduler.service
 ```
 Update the values of User, WorkingDirectory, and ExecStart in testScheduler.service
 ```
@@ -61,9 +61,9 @@ Description=Systemd service that schedules test-paths based on a test-schedule.
 [Service]
 Type=simple
 User=webappuser
-WorkingDirectory=/someDirectory/testScheduler
+WorkingDirectory=/home/webappuser/evan/repos/testScheduler
 Environment="DISPLAY=:1"
-ExecStart=/someDirectory/testScheduler/.venv/bin/python /usr/local/bin/testScheduler
+ExecStart=/home/webappuser/evan/repos/testScheduler/.venv/bin/python /usr/local/bin/testScheduler
 Restart=always
 
 [Install]
