@@ -4,8 +4,9 @@ Description=Systemd service that schedules test-paths based on a test-schedule.
 [Service]
 Type=simple
 User=webappuser
+WorkingDirectory=/home/webappuser/evan/repos/testScheduler
 Environment="DISPLAY=:1"
-ExecStart=/usr/bin/python3 /usr/local/bin/testScheduler
+ExecStart=/home/webappuser/evan/repos/testScheduler/.venv/bin/python /usr/local/bin/testScheduler
 Restart=always
 
 [Install]
