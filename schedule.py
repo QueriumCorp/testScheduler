@@ -331,11 +331,10 @@ def getPathInfo(flds, skips, pathIds):
 def mkPathInput(aTask):
     pathFlds = ["id", "priority"]
     restFlds = list(filter(lambda x: x != "id", pathFlds))
-    idxId = 0
     reqType = getScheduleType(aTask["jira"])
     rslt = []
 
-    if reqType == "jira" or reqType == "question":
+    if reqType == "jira" or reqType == "question" or reqType == "questionId":
         paths = dbConn.getPathsInQstn(
             aTask["question_id"],
             aTask["skipStatuses"],
@@ -351,7 +350,7 @@ def mkPathInput(aTask):
             )
     elif reqType == "path":
         rslt = getPathInfo(
-            pathFlds, aTask["skipStatuses"],aTask["jira"]["paths"])
+            pathFlds, aTask["skipStatuses"], aTask["jira"]["paths"])
 
     return rslt
 
@@ -380,6 +379,37 @@ def qstnToTestPath(aTask, unq):
 
     # Get paths in a question
     qstnId = qstnData[0][0]
+    newTask = aTask
+    newTask["question_id"] = qstnId
+
+    rslt = pathsToTestPath(newTask)
+    return rslt
+
+
+def qstnIdsToTestPath(taskSchedule, qstnIds):
+    result = []
+    logging.info("Question count: {}".format(len(qstnIds)))
+    if len(qstnIds) < 1:
+        return result
+
+    for item in qstnIds:
+        rslt = qstnIdToTestPath(taskSchedule, item)
+        if rslt["status"] is False:
+            logging.warning("Failed: {}".format(rslt["result"]))
+        rslt["unq"] = "na"
+        result.append(rslt)
+
+    return result
+
+
+#######################################
+# Add question paths to testPath
+# Return:
+# status: True/False
+# result: a number of test paths in a question added in testPath
+#######################################
+def qstnIdToTestPath(aTask, qstnId):
+    # Get paths in a question
     newTask = aTask
     newTask["question_id"] = qstnId
 
@@ -484,6 +514,8 @@ def getScheduleType(req):
         return "path"
     elif "useScheduleId" in req:
         return "schedule"
+    elif "questionIds" in req:
+        return "questionId"
     else:
         return "invalid"
 
@@ -569,6 +601,26 @@ def handleSchedule(aTask):
     }
 
 #######################################
+# Handle when schedule reqType is question
+#######################################
+def handleQuestionId(aTask):
+    rslt = {
+        "status": False,
+        "result": "Invalid request: {}".format(aTask["jira"])
+    }
+
+    if "questionIds" not in aTask["jira"]:
+        logging.error("Invalid jira action: {}".format(aTask))
+        return rslt
+
+    rslt = {
+        "status": True,
+        "result": aTask["jira"]["questionIds"]
+    }
+
+    return rslt
+
+#######################################
 # Handle when schedule reqType is invalid
 #######################################
 def handleInvalid(aTask):
@@ -592,6 +644,7 @@ def processReq(aTask):
         "question": handleQuestion,
         "path": handlePath,
         "schedule": handleSchedule,
+        "questionId": handleQuestionId,
         "invalid": handleInvalid
     }
     rslt = handlers[reqType](aTask)
@@ -606,13 +659,14 @@ def processReq(aTask):
         "result": rslt["result"]
     }
 
+
 #######################################
 # Summarize the result
 #######################################
 def summarizeQstn(tbl, aTask, data):
-    successQstns = list(filter(lambda x: x["status"] == True, data))
+    successQstns = list(filter(lambda x: x["status"] is True, data))
     logging.info("Questions scheduled: {}".format(len(successQstns)))
-    failedQstns = list(filter(lambda x: x["status"] == False, data))
+    failedQstns = list(filter(lambda x: x["status"] is False, data))
 
     # Determine the status of the task
     theStatus = "scheduled"
@@ -669,8 +723,8 @@ def task(aTask):
     rsltReq = processReq(aTask)
     logging.debug("task-rsltReq: {}".format(rsltReq))
 
-     # If status is false, update the status in testSchedule
-    if rsltReq["status"] == False:
+    # If status is false, update the status in testSchedule
+    if rsltReq["status"] is False:
         # Update the status and msg of the failed task
         dbConn.modField(tbl, "id", aTask["id"], "status", "fail")
         dbConn.updateJson(tbl, "id", aTask["id"],
@@ -689,6 +743,9 @@ def task(aTask):
         elif rsltReq["reqType"] == "path":
             rslt = pathsToTestPath(aTask)
             summarizePath(tbl, aTask, rslt)
+        elif rsltReq["reqType"] == "questionId":
+            rslt = qstnIdsToTestPath(aTask, rsltReq["result"])
+            summarizeQstn(tbl, aTask, rslt)
 
     logging.info("Task {id} ({name}) --- Finish".format(
         id=aTask["id"], name=aTask["name"]))
