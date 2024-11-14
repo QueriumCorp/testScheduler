@@ -3,8 +3,8 @@
 # python3 test_qstnId.py
 ###############################################################################
 import dbConn
-from schedule import processReq, task as scheduleTask, pathsToTestPath, task
-from schedule import handleQuestionId, qstnIdsToTestPath, qstnIdToTestPath
+from schedule import processReq, task as scheduleTask, pathsToTestPath
+from schedule import handleQuestionId, qstnIdsToTestPath
 from schedule import mkPathInput
 
 
@@ -64,7 +64,7 @@ def test_run():
     testScheduleId = 2065
 
     aTask = getTask(testScheduleId)
-    task(aTask)
+    scheduleTask(aTask)
 
 
 if __name__ == '__main__':

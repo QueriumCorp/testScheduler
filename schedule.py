@@ -387,10 +387,6 @@ def qstnToTestPath(aTask, unq):
 
 
 def qstnIdsToTestPath(taskSchedule, qstnIds):
-    print("qstnIdsToTestPath")
-    print(taskSchedule)
-    print(qstnIds)
-
     result = []
     logging.info("Question count: {}".format(len(qstnIds)))
     if len(qstnIds) < 1:
@@ -398,10 +394,12 @@ def qstnIdsToTestPath(taskSchedule, qstnIds):
 
     for item in qstnIds:
         rslt = qstnIdToTestPath(taskSchedule, item)
-        if rslt["status"] == False:
+        if rslt["status"] is False:
             logging.warning("Failed: {}".format(rslt["result"]))
         rslt["unq"] = "na"
         result.append(rslt)
+
+    return result
 
 
 #######################################
@@ -661,13 +659,14 @@ def processReq(aTask):
         "result": rslt["result"]
     }
 
+
 #######################################
 # Summarize the result
 #######################################
 def summarizeQstn(tbl, aTask, data):
-    successQstns = list(filter(lambda x: x["status"] == True, data))
+    successQstns = list(filter(lambda x: x["status"] is True, data))
     logging.info("Questions scheduled: {}".format(len(successQstns)))
-    failedQstns = list(filter(lambda x: x["status"] == False, data))
+    failedQstns = list(filter(lambda x: x["status"] is False, data))
 
     # Determine the status of the task
     theStatus = "scheduled"
@@ -724,8 +723,8 @@ def task(aTask):
     rsltReq = processReq(aTask)
     logging.debug("task-rsltReq: {}".format(rsltReq))
 
-     # If status is false, update the status in testSchedule
-    if rsltReq["status"] == False:
+    # If status is false, update the status in testSchedule
+    if rsltReq["status"] is False:
         # Update the status and msg of the failed task
         dbConn.modField(tbl, "id", aTask["id"], "status", "fail")
         dbConn.updateJson(tbl, "id", aTask["id"],
@@ -746,7 +745,7 @@ def task(aTask):
             summarizePath(tbl, aTask, rslt)
         elif rsltReq["reqType"] == "questionId":
             rslt = qstnIdsToTestPath(aTask, rsltReq["result"])
-            # summarizePath(tbl, aTask, rslt)
+            summarizeQstn(tbl, aTask, rslt)
 
     logging.info("Task {id} ({name}) --- Finish".format(
         id=aTask["id"], name=aTask["name"]))
